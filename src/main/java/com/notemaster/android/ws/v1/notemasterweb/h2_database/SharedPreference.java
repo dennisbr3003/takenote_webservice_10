@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.notemaster.android.ws.v1.notemasterweb.payload.SharedPreferencePayload;
+
 public class SharedPreference {
 
 	Database h2db = new Database();
@@ -84,5 +86,11 @@ public class SharedPreference {
 		
 
 	}	
+	
+	
+	public void processSharedPreferencePayload(SharedPreferencePayload spp) {
+		System.out.println(spp.toString());
+	}
+	
 	
 }
