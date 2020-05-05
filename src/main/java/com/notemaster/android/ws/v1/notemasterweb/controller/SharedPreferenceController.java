@@ -2,7 +2,6 @@ package com.notemaster.android.ws.v1.notemasterweb.controller;
 
 import java.util.UUID;
 
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.h2_database.Database;
-import com.notemaster.android.ws.v1.notemasterweb.h2_database.SharedPreference;
+import com.notemaster.android.ws.v1.notemasterweb.h2_database.SharedPreferenceTable;
 import com.notemaster.android.ws.v1.notemasterweb.payload.SharedPreferencePayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 
@@ -21,7 +21,7 @@ import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 public class SharedPreferenceController {
 
 	private Database h2db = new Database();
-	private SharedPreference sp = new SharedPreference();
+	private SharedPreferenceTable sp = new SharedPreferenceTable();
 	
 	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE,
                              MediaType.APPLICATION_XML_VALUE }, 
@@ -31,15 +31,13 @@ public class SharedPreferenceController {
 
 		Boolean success = false;
 		DefaultResponse defaultResponse = new DefaultResponse();
-
-		System.out.println("komen we wel in de methode?");
 		
 		try {
 			if (ssp != null) {
-
-				success = true; // for finally
 				
 				try {
+
+					success = true; // for finally
 					
      				h2db.createTable("SHARED_PREFERENCE");
      				sp.processSharedPreferencePayload(ssp);
@@ -51,7 +49,7 @@ public class SharedPreferenceController {
     				defaultResponse.setRemark("JSON payload was consumed by method setSharedPreference");
     				
 				}catch(Exception e) {
-					System.out.println(e.getLocalizedMessage());
+					throw new CustomException(e.getMessage());
 				}
 				
 				return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
@@ -62,8 +60,7 @@ public class SharedPreferenceController {
 			if (!success) {
 				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
 			}
-		}
-		
+		}		
 	}
 	
 }

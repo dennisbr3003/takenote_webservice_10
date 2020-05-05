@@ -7,18 +7,12 @@ import java.sql.Statement;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
-public class Database {
+public class Database implements SharedPreferenceConstants {
 
 	private static String jdbcURL = "jdbc:h2:file:./data/notemaster;AUTO_SERVER=true";
 	private static String jdbcUsername = "sa";
 	private static String jdbcPassword = "";
 	
-	private static final String TABLE_SP = "SHARED_PREFERENCE";
-	private static final String TABLE_SP_KEY = "ID";
-	private static final String TABLE_SP_FLDNAME = "PREFERENCE";
-	private static final String TABLE_SP_FLDVALUE = "VALUE";
-	private static final String TABLE_SP_FLDCREATED = "CREATED";
-
 	public Connection getConnection() {
 		Connection connection = null;
 		try {
@@ -42,7 +36,7 @@ public class Database {
 	public boolean createTable(String table_name) {
 
 		switch(table_name) {
-		case TABLE_SP:
+		case TABLE_PRF:
 			if(createTableSharedPreference()) {
 				return true;
 			};
@@ -55,10 +49,10 @@ public class Database {
 
 	private boolean createTableSharedPreference() {
 
-		String SQL = String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) PRIMARY KEY, " + 
-		                           "%s VARCHAR(40) NOT NULL, %s VARCHAR(40) NOT NULL, %s DATETIME NOT " + 
-				                   "NULL DEFAULT CURRENT_TIMESTAMP);", 
-				                   TABLE_SP, TABLE_SP_KEY, TABLE_SP_FLDNAME, TABLE_SP_FLDVALUE, TABLE_SP_FLDCREATED);
+		String SQL = String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
+		                           "%s VARCHAR(40) PRIMARY KEY NOT NULL, %s VARCHAR(40) NOT NULL, %s VARCHAR(40), %s DATETIME NOT " + 
+				                   "NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);", 
+				                   TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE, PRF_CREATED, PRF_UPDATED);
 
 		try {
 			Connection connection = getConnection();
@@ -75,7 +69,7 @@ public class Database {
 
 		try {
 			if(testConnection()) {
-				return createTable(TABLE_SP);
+				return createTable(TABLE_PRF);
 			}else {
 				return false;
 			}

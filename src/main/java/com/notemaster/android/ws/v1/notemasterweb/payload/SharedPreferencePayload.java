@@ -21,7 +21,7 @@ public class SharedPreferencePayload {
     public SharedPreferencePayload(String device_id, List<ArrayItemObject> shared_preference) {
     	super();
         this.device_id = device_id;
-        this.shared_preference = shared_preference;
+        SharedPreferencePayload.shared_preference = shared_preference;
     }
 
     public String getDevice_id() {
@@ -37,7 +37,23 @@ public class SharedPreferencePayload {
     }
 
     public void setShared_preference(List<ArrayItemObject> shared_preference) {
-        this.shared_preference = shared_preference;
+        SharedPreferencePayload.shared_preference = shared_preference;
+    }
+    
+    public int getShared_preferenceSize() {
+    	if (SharedPreferencePayload.shared_preference != null) {
+    		return SharedPreferencePayload.shared_preference.size();
+    	} else {
+    		return 0;
+    	}
+    }
+    
+    public ArrayItemObject getShared_preferenceElement(int idx) {
+    	if ((SharedPreferencePayload.shared_preference != null) && !(idx > getShared_preferenceSize())) {    	
+    	    return SharedPreferencePayload.shared_preference.get(idx);
+    	} else {
+    		return null;
+    	}    	
     }
     
     @Override
