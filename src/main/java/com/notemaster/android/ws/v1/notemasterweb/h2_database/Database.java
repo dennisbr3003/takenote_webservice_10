@@ -49,20 +49,25 @@ public class Database implements SharedPreferenceConstants {
 
 	private boolean createTableSharedPreference() {
 
-		String SQL = String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
-		                           "%s VARCHAR(40) PRIMARY KEY NOT NULL, %s VARCHAR(40) NOT NULL, %s VARCHAR(40), %s DATETIME NOT " + 
-				                   "NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);", 
-				                   TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE, PRF_CREATED, PRF_UPDATED);
+		String SQL_CreateTable = String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
+		                                       "%s VARCHAR(40) NOT NULL, %s VARCHAR(40) NOT NULL, %s VARCHAR(40), %s DATETIME NOT " + 
+				                               "NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " + 
+		                                       "CONSTRAINT %s PRIMARY KEY (%s,%s));", 
+				                                TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE, PRF_CREATED, 
+				                                PRF_UPDATED, P_KEY, PRF_ID, PRF_NAME);
 
 		try {
 			Connection connection = getConnection();
 			Statement statement = connection.createStatement();
-			statement.execute(SQL);
-			connection.commit();
+			statement.execute(SQL_CreateTable);
+			connection.commit();						
 			return true;
 		} catch(SQLException e) {
 			throw new CustomException(String.format("%s|%s", e.getMessage(), "createTableSharedPreference()"));
 		}
+		
+
+				
 	}
 
 	public boolean initDatabase() {
