@@ -8,7 +8,9 @@ import java.sql.Timestamp;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.ArrayItemObject;
+import com.notemaster.android.ws.v1.notemasterweb.payload.DefaultPayload;
 import com.notemaster.android.ws.v1.notemasterweb.payload.SharedPreferencePayload;
+import com.notemaster.android.ws.v1.notemasterweb.response.SharedPreferenceResponse;
 
 public class SharedPreferenceTable implements SharedPreferenceConstants {
 
@@ -24,23 +26,28 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		}
 	}
 
-	public void readTable() {
-		Connection connection = h2db.getConnection();
-		PreparedStatement preparedStatement;
+	public SharedPreferenceResponse getSharedPreferenceResponse(DefaultPayload defaultPayload) {
+		
+		PreparedStatement preparedStatement = null;
+		SharedPreferenceResponse spr = new SharedPreferenceResponse();	
+		
+		spr.setDevice_id(defaultPayload.getDevice_id());
+
 		try {
-			preparedStatement = connection.prepareStatement("SELECT * FROM SHARED_PREFERENCE");
+			preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
+					                                                TABLE_PRF, PRF_ID, defaultPayload.getDevice_id()));
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
-				System.out.println("Id " + rs.getString("ID") + " Name " + rs.getString("PREFERENCE") + " Value " + rs.getString("VALUE"));
+				// System.out.println("Id " + rs.getString("ID") + " Name " + rs.getString("PREFERENCE") + " Value " + rs.getString("VALUE"));
+                spr.addArrayElement(rs.getString(PRF_ID), rs.getString(PRF_NAME), rs.getString(PRF_VALUE), rs.getString(PRF_DTYPE)); 				
 			}
 			preparedStatement.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new CustomException(String.format("%s|%s", e.getMessage(), "getSharedPreferenceResponse()"));
 		}
+		return spr;
 	}
-
-
+	
 	public boolean RecordExists(String id, String key) {
 
 		PreparedStatement preparedStatement = null;
