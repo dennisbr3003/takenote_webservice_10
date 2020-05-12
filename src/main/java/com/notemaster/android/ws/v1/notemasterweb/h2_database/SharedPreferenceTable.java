@@ -26,16 +26,16 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		}
 	}
 
-	public SharedPreferenceResponse getSharedPreferenceResponse(DefaultPayload defaultPayload) {
+	public SharedPreferenceResponse getSharedPreferenceResponse(String device_id) {
 		
 		PreparedStatement preparedStatement = null;
 		SharedPreferenceResponse spr = new SharedPreferenceResponse();	
 		
-		spr.setDevice_id(defaultPayload.getDevice_id());
+		spr.setDevice_id(device_id);
 
 		try {
 			preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
-					                                                TABLE_PRF, PRF_ID, defaultPayload.getDevice_id()));
+					                                                TABLE_PRF, PRF_ID, device_id));
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
 				// System.out.println("Id " + rs.getString("ID") + " Name " + rs.getString("PREFERENCE") + " Value " + rs.getString("VALUE"));

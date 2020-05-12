@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,23 +67,22 @@ public class SharedPreferenceController {
 		}		
 	}
 
-	@GetMapping(consumes = {MediaType.APPLICATION_JSON_VALUE,
-		          	        MediaType.APPLICATION_XML_VALUE }, 
+	@GetMapping(path = "/{device_id}", 
 			    produces = {MediaType.APPLICATION_JSON_VALUE, 
 				      	    MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<SharedPreferenceResponse> getSharedPreferences(@RequestBody DefaultPayload defaultPayload) {
+	public ResponseEntity<SharedPreferenceResponse> getSharedPreferences(@PathVariable String device_id) {
 
+		// action is a parameter but it's not yet used.
+		System.out.println("Parameter value " + device_id);
+		
 		Boolean success = false;
 		SharedPreferenceResponse spr = new SharedPreferenceResponse();
 
-		System.out.println("we are in getSharedPreference");
-		System.out.println(defaultPayload.getAction());
-		System.out.println(defaultPayload.getDevice_id());
 		try {
 			try {
 
 				success = true; // for finally
-				spr = sp.getSharedPreferenceResponse(defaultPayload);
+				spr = sp.getSharedPreferenceResponse(device_id);
 
 			}catch(Exception e) {
 				throw new CustomException(e.getMessage());
