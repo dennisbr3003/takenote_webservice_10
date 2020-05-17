@@ -25,7 +25,11 @@ public class NoteMasterController {
 			                                      MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<DefaultResponse> executeAction(
 			@PathVariable String argument) {
-
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 	
+		
 		switch(argument) {
 		case "test":  // translates to http://192.168.178.69:8080/notemaster/test					
 			if(h2db.testConnection()) {
@@ -36,13 +40,13 @@ public class NoteMasterController {
 					defaultResponse.setRemark("Database is online and ready");
 					return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
 				} catch(Exception e) {
-					throw new CustomException(String.format("%s|%s", e.getMessage(), "executeAction()"));
+					throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 				}
 			} else {
-				throw new CustomException(String.format("%s|%s", "Database connection could not be established", "executeAction()"));
+				throw new CustomException(String.format("%s|%s", "Database connection could not be established", internal_method_name));
 			}
 		default:
-			throw new CustomException(String.format("%s|%s", String.format("Unknown argument %s", argument), "executeAction()"));			
+			throw new CustomException(String.format("%s|%s", String.format("Unknown argument %s", argument), internal_method_name));			
 		}
 
 	}

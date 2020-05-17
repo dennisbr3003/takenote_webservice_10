@@ -7,74 +7,96 @@ import java.sql.Statement;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
-public class Database implements SharedPreferenceConstants {
+public class Database implements SharedPreferenceConstants, DatabaseLoggingConstants {
 
 	private static String jdbcURL = "jdbc:h2:file:./data/notemaster;AUTO_SERVER=true";
 	private static String jdbcUsername = "sa";
 	private static String jdbcPassword = "";
 	
 	public Connection getConnection() {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 			
+		
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
 		} catch (SQLException e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "getConnection()"));			
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			
 		}
 		return connection;
 	}	 
 
 	public boolean testConnection() {
+
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 	
+		
 		try {
 			Connection testConnection = getConnection();
 			return(testConnection!=null);
 		} catch(Exception e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "testConnection()"));
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
 	}
 
+	
+	private String getTableDefinition(String tableName) {
 
-	public boolean createTable(String table_name) {
-
-		switch(table_name) {
+		switch(tableName) {
+		case TABLE_LOG:
+			return String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
+					"%s INT NOT NULL AUTO_INCREMENT, %s VARCHAR(255) NOT NULL, "+ 
+					"%s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, %s VARCHAR(10) NOT NULL, " +
+					"%s VARCHAR(100), %s VARCHAR(255), CONSTRAINT %s PRIMARY KEY (%s,%s));", 
+					TABLE_LOG, LOG_ID, LOG_SEQ, LOG_GUID, LOG_CREATED, LOG_TYPE, LOG_METHOD, LOG_VALUE, 
+					P_KEY_LOG, LOG_ID, LOG_SEQ);
 		case TABLE_PRF:
-			if(createTableSharedPreference()) {
-				return true;
-			};
-			return false;
+			return String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
+					"%s VARCHAR(40) NOT NULL, %s VARCHAR(40) NOT NULL, %s VARCHAR(40), %s DATETIME NOT " + 
+					"NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " + 
+					"CONSTRAINT %s PRIMARY KEY (%s,%s));", 
+					TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE, PRF_CREATED, PRF_UPDATED, 
+					P_KEY_PRF, PRF_ID, PRF_NAME);
 		default:
-			throw new CustomException(String.format("%s|%s", "No valid tablename was passed to the createTable method", "createTable()"));
+			return "";
 		}
 
 	}
+	
+	private boolean createTable(String tableName) {
 
-	private boolean createTableSharedPreference() {
-
-		String SQL_CreateTable = String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, " + 
-		                                       "%s VARCHAR(40) NOT NULL, %s VARCHAR(40) NOT NULL, %s VARCHAR(40), %s DATETIME NOT " + 
-				                               "NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " + 
-		                                       "CONSTRAINT %s PRIMARY KEY (%s,%s));", 
-				                                TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE, PRF_CREATED, 
-				                                PRF_UPDATED, P_KEY, PRF_ID, PRF_NAME);
-
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 	
+		
 		try {
 			Connection connection = getConnection();
 			Statement statement = connection.createStatement();
-			statement.execute(SQL_CreateTable);
+			statement.execute(getTableDefinition(tableName));
 			connection.commit();						
 			return true;
-		} catch(SQLException e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "createTableSharedPreference()"));
+		} catch(Exception e) {
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
 		
-
-				
 	}
+	
 
 	public boolean initDatabase() {
 
 		try {
 			if(testConnection()) {
-				return createTable(TABLE_PRF);
+				try {
+				    createTable(TABLE_PRF);
+				    createTable(TABLE_LOG);
+				    return true;
+				} catch(Exception e) {
+					System.out.println(e.getMessage());
+					return false;
+				}
 			}else {
 				return false;
 			}

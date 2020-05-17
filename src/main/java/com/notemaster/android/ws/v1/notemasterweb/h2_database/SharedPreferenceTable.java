@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.ArrayItemObject;
-import com.notemaster.android.ws.v1.notemasterweb.payload.DefaultPayload;
 import com.notemaster.android.ws.v1.notemasterweb.payload.SharedPreferencePayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.SharedPreferenceResponse;
 
@@ -16,6 +15,11 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 
 	private Database h2db = new Database();
 	private Connection connection;
+	public DatabaseLoggingTable dlt;
+
+	public void setConnection(Connection connection) {
+		this.connection = connection;
+	}
 
 	public SharedPreferenceTable() {
 		super();
@@ -27,10 +31,25 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 	}
 
 	public SharedPreferenceResponse getSharedPreferenceResponse(String device_id) {
+
+		String internal_method_name = Thread.currentThread() 
+				        .getStackTrace()[1] 
+						.getMethodName(); 
 		
 		PreparedStatement preparedStatement = null;
 		SharedPreferenceResponse spr = new SharedPreferenceResponse();	
+
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 		
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new DatabaseLoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(device_id);
+		}
+		
+		int i=0;
+	    
 		spr.setDevice_id(device_id);
 
 		try {
@@ -39,17 +58,24 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
 				// System.out.println("Id " + rs.getString("ID") + " Name " + rs.getString("PREFERENCE") + " Value " + rs.getString("VALUE"));
-                spr.addArrayElement(rs.getString(PRF_ID), rs.getString(PRF_NAME), rs.getString(PRF_VALUE), rs.getString(PRF_DTYPE)); 				
+                spr.addArrayElement(rs.getString(PRF_ID), rs.getString(PRF_NAME), rs.getString(PRF_VALUE), rs.getString(PRF_DTYPE));
+                i++;
 			}
 			preparedStatement.close();
 		} catch (SQLException e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "getSharedPreferenceResponse()"));
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Retreived", String.valueOf(i), "shared preference values"));
 		return spr;
 	}
 	
 	public boolean RecordExists(String id, String key) {
 
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
 		PreparedStatement preparedStatement = null;
 
 		try {
@@ -62,19 +88,25 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 			} else {
 				return false;
 			}
-		} catch (SQLException e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "RecordExists()"));
+		} catch (SQLException e) {			
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}	
 		finally {
 			try {
 				preparedStatement.close();
 			} catch (SQLException e) {
-				throw new CustomException(String.format("%s|%s", e.getMessage(), "RecordExists()"));			}
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			}
 		}
 	}	
 
 	public void insertRecord(ArrayItemObject aio) {
 
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
 		PreparedStatement preparedStatement = null;
 
 		try {
@@ -87,9 +119,10 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 			preparedStatement.setString(3, aio.getItem_value());
 			preparedStatement.setString(4, aio.getItem_datatype());
 
-			preparedStatement.executeUpdate();
+			preparedStatement.executeUpdate();		
 
 		} catch (Exception e) {
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
 			throw new CustomException(String.format("%s|%s", e.getMessage(), "insertRecord()"));
 		}	
 		finally {
@@ -97,12 +130,18 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 				preparedStatement.close();
 				connection.commit();
 			} catch (SQLException e) {
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());
 				throw new CustomException(String.format("%s|%s", e.getMessage(), "insertRecord()"));			}
 		}		
 	}	
 
 
 	public void updateRecord(ArrayItemObject aio) {
+
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
 		PreparedStatement preparedStatement = null;
 
 		try {
@@ -117,21 +156,36 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 			preparedStatement.executeUpdate();
 
 		} catch (Exception e) {
-			throw new CustomException(String.format("%s|%s", e.getMessage(), "updateRecord()"));
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());			
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}	
 		finally {
 			try {
 				preparedStatement.close();
 				connection.commit();
 			} catch (SQLException e) {
-				throw new CustomException(String.format("%s|%s", e.getMessage(), "updateRecord()"));			}
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());	
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			}
 		}				
 	}
 
 	public void processSharedPreferencePayload(SharedPreferencePayload spp) {
 
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new DatabaseLoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(spp.getDevice_id());
+		}
+				
 		ArrayItemObject aio = new ArrayItemObject();
 
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+		
 		for(int i=0;i<spp.getShared_preferenceSize();i++) {
 			aio = spp.getShared_preferenceElement(i);
 			if(aio!=null) {
@@ -146,18 +200,22 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 					}
 				} catch(Exception e) {
 					if(e.getMessage() != null) {
-						throw new CustomException(String.format("%s|%s", e.getMessage(), "processSharedPreferencePayload()"));		
+						dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+						throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));		
 					} else {
-						throw new CustomException(String.format("%s|%s", "Insert or Update went wrong. Exception = null", "processSharedPreferencePayload()"));			
+						dlt.createErrorLogEntry(internal_method_name, "Insert or Update went wrong. Exception = null");
+						throw new CustomException(String.format("%s|%s", "Insert or Update went wrong. Exception = null", internal_method_name));			
 					}
 				}
 			}else {
-				throw new CustomException(String.format("%s|%s", "Sharedpreference array item object is null", "processSharedPreferencePayload()"));
+				dlt.createErrorLogEntry(internal_method_name, "Sharedpreference array item object is null");
+				throw new CustomException(String.format("%s|%s", "Sharedpreference array item object is null", internal_method_name));
 
 			}
-		}
+		}		
+	    dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Processed", String.valueOf(spp.getShared_preferenceSize()), "shared preference values"));				
 	}
-
+	
 }
 
 
