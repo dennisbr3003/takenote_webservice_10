@@ -1,0 +1,6 @@
+#FileLock
+#Wed Jun 17 23:09:44 CEST 2020
+server=192.168.178.69\:55098
+hostName=LT-DB
+method=file
+id=172c41dc306fef77b478229b4aa770f09b58f702854

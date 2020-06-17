@@ -4,18 +4,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.ArrayItemObject;
-import com.notemaster.android.ws.v1.notemasterweb.payload.SharedPreferencePayload;
+import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.SharedPreferenceResponse;
 
-public class SharedPreferenceTable implements SharedPreferenceConstants {
+public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 
 	private Database h2db = new Database();
 	private Connection connection;
-	public DatabaseLoggingTable dlt;
+	public LoggingTable dlt;
 
 	public void setConnection(Connection connection) {
 		this.connection = connection;
@@ -43,7 +44,7 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		
 		// extra safety -->
 		if(dlt == null) {
-			dlt = new DatabaseLoggingTable();
+			dlt = new LoggingTable();
 			dlt.setGlobal_id();
 			dlt.setDevice_id(device_id);
 		}
@@ -114,10 +115,10 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 					String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);", 
 							TABLE_PRF, PRF_ID, PRF_NAME, PRF_VALUE, PRF_DTYPE));
 
-			preparedStatement.setString(1, aio.getItem_id());
-			preparedStatement.setString(2, aio.getItem_name());
-			preparedStatement.setString(3, aio.getItem_value());
-			preparedStatement.setString(4, aio.getItem_datatype());
+			preparedStatement.setString(1, aio.getItemId());
+			preparedStatement.setString(2, aio.getItemName());
+			preparedStatement.setString(3, aio.getItemValue());
+			preparedStatement.setString(4, aio.getItemDatatype());
 
 			preparedStatement.executeUpdate();		
 
@@ -147,10 +148,10 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		try {
 			preparedStatement = connection.prepareStatement(
 					String.format("UPDATE %s SET %s = ?, %s = ?, %s = ? WHERE %s = '%s' AND %s = '%s';", 
-							TABLE_PRF, PRF_VALUE, PRF_DTYPE, PRF_UPDATED, PRF_ID, aio.getItem_id(), PRF_NAME, aio.getItem_name()));
+							TABLE_PRF, PRF_VALUE, PRF_DTYPE, PRF_UPDATED, PRF_ID, aio.getItemId(), PRF_NAME, aio.getItemName()));
 
-			preparedStatement.setString(1, aio.getItem_value());
-			preparedStatement.setString(2, aio.getItem_datatype());
+			preparedStatement.setString(1, aio.getItemValue());
+			preparedStatement.setString(2, aio.getItemDatatype());
 			preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 
 			preparedStatement.executeUpdate();
@@ -169,7 +170,7 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		}				
 	}
 
-	public void processSharedPreferencePayload(SharedPreferencePayload spp) {
+	public void saveSharedPreferences(UserDataPayload udp) {
 
 		String internal_method_name = Thread.currentThread() 
 		        .getStackTrace()[1] 
@@ -177,21 +178,23 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 		
 		// extra safety -->
 		if(dlt == null) {
-			dlt = new DatabaseLoggingTable();
+			dlt = new LoggingTable();
 			dlt.setGlobal_id();
-			dlt.setDevice_id(spp.getDevice_id());
+			dlt.setDevice_id(udp.getDevice_id());
 		}
-				
+
+		clearSharedPreferenceDeviceData(udp);
+		
 		ArrayItemObject aio = new ArrayItemObject();
 
 		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 		
-		for(int i=0;i<spp.getShared_preferenceSize();i++) {
-			aio = spp.getShared_preferenceElement(i);
+		for(int i=0;i<udp.getShared_preferenceSize();i++) {
+			aio = udp.getShared_preferenceElement(i);
 			if(aio!=null) {
 				try {
 					// Check if the record exists -->
-					if(RecordExists(aio.getItem_id(), aio.getItem_name())) {
+					if(RecordExists(aio.getItemId(), aio.getItemName())) {
 						// If the record exists then update -->	
 						updateRecord(aio);
 					}else {
@@ -213,8 +216,36 @@ public class SharedPreferenceTable implements SharedPreferenceConstants {
 
 			}
 		}		
-	    dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Processed", String.valueOf(spp.getShared_preferenceSize()), "shared preference values"));				
+	    dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Processed", String.valueOf(udp.getShared_preferenceSize()), "shared preference values"));				
 	}
+	
+    private void clearSharedPreferenceDeviceData(UserDataPayload udp) {
+		
+    	String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
+    	Statement stmt = null; 
+    	
+		try {			
+			stmt = connection.createStatement();
+			stmt.execute(String.format("DELETE FROM %s WHERE %s = '%s';",
+							TABLE_PRF, PRF_ID, udp.getDevice_id()));			
+
+		} catch (SQLException e) {			
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+		}	
+		finally {
+			try {
+				stmt.close();
+				dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Cleared shared preference device data for id ", udp.getDevice_id()));
+			} catch (SQLException e) {
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			}
+		}
+    	
+    }
 	
 }
 
