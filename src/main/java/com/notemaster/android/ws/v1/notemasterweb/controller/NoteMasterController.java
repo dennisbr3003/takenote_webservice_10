@@ -44,7 +44,7 @@ public class NoteMasterController {
 				}
 			} else {
 				throw new CustomException(String.format("%s|%s", "Database connection could not be established", internal_method_name));
-			}
+			}			
 		default:
 			throw new CustomException(String.format("%s|%s", String.format("Unknown argument %s", argument), internal_method_name));			
 		}

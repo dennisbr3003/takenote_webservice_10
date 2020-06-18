@@ -65,6 +65,14 @@ public class UserDataPayload {
     	}
     }	
 
+    public Image getImageListElement(int idx) {
+    	if ((UserDataPayload.passPointImageList != null) && !(idx > getPassPointImageListSize())) {    	
+    	    return UserDataPayload.passPointImageList.get(idx);
+    	} else {
+    		return null;
+    	}    	
+    }			
+	
 	public int getNoteListSize() {
     	if (UserDataPayload.noteList != null) {
     		return UserDataPayload.noteList.size();

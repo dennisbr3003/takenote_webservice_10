@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.ArrayItemObject;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
-import com.notemaster.android.ws.v1.notemasterweb.response.SharedPreferenceResponse;
+import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
 public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 
@@ -31,16 +31,13 @@ public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 		}
 	}
 
-	public SharedPreferenceResponse getSharedPreferenceResponse(String device_id) {
-
+	public UserDataResponse getSharedPreferenceResponse(UserDataResponse udr) {
+		
 		String internal_method_name = Thread.currentThread() 
 				        .getStackTrace()[1] 
 						.getMethodName(); 
-		
-		PreparedStatement preparedStatement = null;
-		SharedPreferenceResponse spr = new SharedPreferenceResponse();	
 
-		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+		String device_id = udr.getDevice_id();
 		
 		// extra safety -->
 		if(dlt == null) {
@@ -49,9 +46,11 @@ public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 			dlt.setDevice_id(device_id);
 		}
 		
+		PreparedStatement preparedStatement = null;
+
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+								
 		int i=0;
-	    
-		spr.setDevice_id(device_id);
 
 		try {
 			preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
@@ -59,7 +58,7 @@ public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
 				// System.out.println("Id " + rs.getString("ID") + " Name " + rs.getString("PREFERENCE") + " Value " + rs.getString("VALUE"));
-                spr.addArrayElement(rs.getString(PRF_ID), rs.getString(PRF_NAME), rs.getString(PRF_VALUE), rs.getString(PRF_DTYPE));
+                udr.addSharedPreferenceArrayElement(rs.getString(PRF_ID), rs.getString(PRF_NAME), rs.getString(PRF_VALUE), rs.getString(PRF_DTYPE));
                 i++;
 			}
 			preparedStatement.close();
@@ -67,8 +66,11 @@ public class SharedPreferenceTable implements SharedPreferenceTableConstants {
 			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
+		
 		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Retreived", String.valueOf(i), "shared preference values"));
-		return spr;
+		
+		return udr;
+		
 	}
 	
 	public boolean RecordExists(String id, String key) {

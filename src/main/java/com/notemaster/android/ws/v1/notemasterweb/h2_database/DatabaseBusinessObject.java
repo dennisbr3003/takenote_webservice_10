@@ -1,12 +1,14 @@
 package com.notemaster.android.ws.v1.notemasterweb.h2_database;
 
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
+import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
 public class DatabaseBusinessObject {
 	
 	public LoggingTable dlt;
-	private SharedPreferenceTable sp = new SharedPreferenceTable();
-	private NoteTable nt = new NoteTable(); 
+	private SharedPreferenceTable sharedPreferenceTable = new SharedPreferenceTable();
+	private NoteTable noteTable = new NoteTable(); 
+	private ImageTable imageTable = new ImageTable();
 	
 	public DatabaseBusinessObject() {
 		
@@ -31,14 +33,48 @@ public class DatabaseBusinessObject {
 		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Number of elements in array passpoint image (s)", String.valueOf(udp.getPassPointImageListSize())));
 		
 		// first store the shared preferences
-		sp.saveSharedPreferences(udp);
+		sharedPreferenceTable.saveSharedPreferences(udp);
 		
 		// Store the notes
-		nt.saveNote(udp);
+		noteTable.saveNote(udp);
 		
 		// Store the passpoint image(s)
+		imageTable.saveImage(udp);
 		
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
 				
+	}
+	
+	public UserDataResponse getUserDataResponse(String device_id) {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new LoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(device_id);
+		}
+		
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+		
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Set to retrieve values for device id", device_id));
+		
+		UserDataResponse udr = new UserDataResponse();
+		udr.setDevice_id(device_id);
+		
+		udr = sharedPreferenceTable.getSharedPreferenceResponse(udr);
+		
+		udr = noteTable.getNoteResponse(udr);
+		
+		udr = imageTable.getImageResponse(udr);
+		
+		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
+		
+		return udr;
+		
 	}
 	
 }

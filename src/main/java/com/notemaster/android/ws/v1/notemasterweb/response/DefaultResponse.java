@@ -5,7 +5,7 @@ public class DefaultResponse {
 	private String responsetype = "notemaster_v1";  
 	private String status;
 	private String entity;
-	private String key;
+	private String key;	
 	private String remark;
 	
 	public String getKey() {
