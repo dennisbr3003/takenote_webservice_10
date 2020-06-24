@@ -31,4 +31,4 @@ build/
 .vscode/
 
 ### H2 Database ###
-/data/
+data/

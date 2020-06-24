@@ -123,8 +123,7 @@ public class Database implements SharedPreferenceTableConstants,
 			return false;
 		}
 
-	}
-
+	}	
 
 }
 

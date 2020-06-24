@@ -117,6 +117,46 @@ public class ImageTable implements ImageTableConstants {
 	    dlt.createInfoLogEntry(internal_method_name, String.format("%s %s %s", "Processed", String.valueOf(udp.getPassPointImageListSize()), " image(s)"));				
 	}	
 	
+    public boolean isEmpty(String device_id) {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new LoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(device_id);
+		}
+				
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
+					                                                TABLE_PPI, PPI_ID, device_id));
+			ResultSet rs = preparedStatement.executeQuery();
+			if (rs.next()) {				
+				return false; // not empty
+			} else {
+				return true; // empty
+			}
+			
+		} catch (SQLException e) {
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+		}
+		finally {
+	 		try {
+				preparedStatement.close();
+				dlt.createInfoLogEntry(internal_method_name, String.format("%s", "completed"));
+			} catch (SQLException e) {			
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+			}
+		}
+    }	
+	
 	public void insertRecord(Image image) {
 
 		String internal_method_name = Thread.currentThread() 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.h2_database.Database;
+import com.notemaster.android.ws.v1.notemasterweb.h2_database.DatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 
 @RestController
@@ -20,6 +21,8 @@ public class NoteMasterController {
 
 	private Database h2db = new Database();	
 	private DefaultResponse defaultResponse = new DefaultResponse();
+	
+	private DatabaseBusinessObject databaseBusinessObject = new DatabaseBusinessObject();
 	
 	@GetMapping(path = "/{argument}", produces = {MediaType.APPLICATION_JSON_VALUE, 
 			                                      MediaType.APPLICATION_XML_VALUE })
@@ -44,12 +47,45 @@ public class NoteMasterController {
 				}
 			} else {
 				throw new CustomException(String.format("%s|%s", "Database connection could not be established", internal_method_name));
-			}			
+			}							    
 		default:
 			throw new CustomException(String.format("%s|%s", String.format("Unknown argument %s", argument), internal_method_name));			
 		}
 
 	}
 
+	@GetMapping(path = "/{argument}/{device_id}", produces = {MediaType.APPLICATION_JSON_VALUE, 
+            												  MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<DefaultResponse> deviceHasData(@PathVariable String argument, @PathVariable String device_id) {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 					
+		try {
+			defaultResponse.setEntity("notemaster/devicehasdata/<device_id>");
+			defaultResponse.setKey(device_id);
+	
+			if (databaseBusinessObject.deviceHasData(device_id)) {
+				try {					
+				        defaultResponse.setStatus("1"); //has data
+					defaultResponse.setRemark(String.format("%s %s %s", "Device", device_id, "has saved data"));
+					return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
+				} catch(Exception e) {
+					throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+				}
+		    } else {
+				try {					
+				        defaultResponse.setStatus("0"); //has no data
+					defaultResponse.setRemark(String.format("%s %s %s", "Device", device_id, "has no saved data"));
+					return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
+				} catch(Exception e) {
+					throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+				}
+		    }	
+		} catch(Exception e) {
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+		}
+	}
+	
 	
 }

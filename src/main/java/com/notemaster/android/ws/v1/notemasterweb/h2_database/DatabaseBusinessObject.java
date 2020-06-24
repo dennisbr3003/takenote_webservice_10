@@ -45,6 +45,33 @@ public class DatabaseBusinessObject {
 				
 	}
 	
+	public boolean deviceHasData(String device_id) {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+		
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new LoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(device_id);
+		}
+		
+		try {
+			dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+	
+	        if(sharedPreferenceTable.isEmpty(device_id) && noteTable.isEmpty(device_id) && imageTable.isEmpty(device_id)) {
+	        	return false;
+	        }
+			return true;
+		}
+		finally {
+			dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
+		}
+		
+	}
+	
 	public UserDataResponse getUserDataResponse(String device_id) {
 		
 		String internal_method_name = Thread.currentThread() 

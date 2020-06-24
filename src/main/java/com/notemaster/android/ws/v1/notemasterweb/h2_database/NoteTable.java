@@ -48,7 +48,7 @@ public class NoteTable implements NoteTableConstants {
 					String.format("SELECT * FROM %s WHERE %s = '%s' AND %s = '%s';",
 							TABLE_NTS, NTS_ID, id, NTS_NAME, key ));
 			ResultSet rs = preparedStatement.executeQuery();
-			if (rs.next()) {
+			if (rs.next()) {				
 				return true;
 			} else {
 				return false;
@@ -205,14 +205,7 @@ public class NoteTable implements NoteTableConstants {
 		PreparedStatement preparedStatement = null;
 		
 		dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-		
-		// extra safety -->
-		if(dlt == null) {
-			dlt = new LoggingTable();
-			dlt.setGlobal_id();
-			dlt.setDevice_id(device_id);
-		}
-		
+				
 		int i=0;
 		
 		try {
@@ -234,6 +227,46 @@ public class NoteTable implements NoteTableConstants {
 		return udr;
 		
 	}
+
+    public boolean isEmpty(String device_id) {
+		
+		String internal_method_name = Thread.currentThread() 
+		        .getStackTrace()[1] 
+				.getMethodName(); 
+
+		// extra safety -->
+		if(dlt == null) {
+			dlt = new LoggingTable();
+			dlt.setGlobal_id();
+			dlt.setDevice_id(device_id);
+		}
+				
+		PreparedStatement preparedStatement = null;
+		
+		try {
+			preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
+					                                                TABLE_NTS, NTS_ID, device_id));
+			ResultSet rs = preparedStatement.executeQuery();
+			if (rs.next()) {				
+				return false; // not empty
+			} else {
+				return true; // empty
+			}
+			
+		} catch (SQLException e) {
+			dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+		}
+		finally {
+	 		try {
+				preparedStatement.close();
+				dlt.createInfoLogEntry(internal_method_name, String.format("%s", "completed"));
+			} catch (SQLException e) {			
+				dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+			}
+		}
+    }		
 	
     private void clearNoteDeviceData(UserDataPayload udp) {
 		
