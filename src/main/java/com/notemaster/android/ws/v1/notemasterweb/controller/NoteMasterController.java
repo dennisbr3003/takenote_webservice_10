@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.notemaster.android.ws.v1.notemasterweb.database.Database;
+import com.notemaster.android.ws.v1.notemasterweb.database.DatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
-import com.notemaster.android.ws.v1.notemasterweb.h2_database.Database;
-import com.notemaster.android.ws.v1.notemasterweb.h2_database.DatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 
 @RestController
 @RequestMapping("notemaster") // translates to http://192.168.178.69:8080/notemaster
 public class NoteMasterController {
 
-	private Database h2db = new Database();	
+	//private Database h2db = new Database();	
 	private DefaultResponse defaultResponse = new DefaultResponse();
 	
 	private DatabaseBusinessObject databaseBusinessObject = new DatabaseBusinessObject();
@@ -35,7 +35,7 @@ public class NoteMasterController {
 		
 		switch(argument) {
 		case "test":  // translates to http://192.168.178.69:8080/notemaster/test					
-			if(h2db.testConnection()) {
+			if(databaseBusinessObject.verifyConnection()) { //this method auto-closes the connection
 				try {
 					defaultResponse.setStatus("1");
 					defaultResponse.setEntity("notemaster/test");
@@ -67,7 +67,7 @@ public class NoteMasterController {
 	
 			if (databaseBusinessObject.deviceHasData(device_id)) {
 				try {					
-				        defaultResponse.setStatus("1"); //has data
+				    defaultResponse.setStatus("1"); //has data
 					defaultResponse.setRemark(String.format("%s %s %s", "Device", device_id, "has saved data"));
 					return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
 				} catch(Exception e) {
@@ -75,7 +75,7 @@ public class NoteMasterController {
 				}
 		    } else {
 				try {					
-				        defaultResponse.setStatus("0"); //has no data
+				    defaultResponse.setStatus("0"); //has no data
 					defaultResponse.setRemark(String.format("%s %s %s", "Device", device_id, "has no saved data"));
 					return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
 				} catch(Exception e) {

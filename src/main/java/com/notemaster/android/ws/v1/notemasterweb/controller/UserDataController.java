@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.notemaster.android.ws.v1.notemasterweb.database.DatabaseBusinessObject;
+import com.notemaster.android.ws.v1.notemasterweb.database.LoggingTable;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
-import com.notemaster.android.ws.v1.notemasterweb.h2_database.DatabaseBusinessObject;
-import com.notemaster.android.ws.v1.notemasterweb.h2_database.LoggingTable;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
@@ -24,6 +24,7 @@ import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 public class UserDataController {
 
 	private DatabaseBusinessObject databaseBusinessObject = new DatabaseBusinessObject();
+	private LoggingTable logger;
 	
 	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE,
 			                 MediaType.APPLICATION_XML_VALUE }, 
@@ -45,10 +46,12 @@ public class UserDataController {
 				try {
 
 					// Initialise logging -->
-					initLoggingObject(databaseBusinessObject, udp.getDevice_id());
+					databaseBusinessObject.setConnection();
+					databaseBusinessObject.setLogger(udp.getDevice_id());
+					logger = databaseBusinessObject.getLogger();
 
 					// create first log entry -->
-					databaseBusinessObject.dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+					logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 
 					success = true; // <-- for finally
 					databaseBusinessObject.processUserDataPayload(udp);
@@ -60,15 +63,16 @@ public class UserDataController {
 					defaultResponse.setRemark("JSON payload was consumed by method setSharedPreference");
 
 				}catch(Exception e) {
-					databaseBusinessObject.dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+					logger.createErrorLogEntry(internal_method_name, e.getMessage());
 					throw new CustomException(e.getMessage());
 				}
-				databaseBusinessObject.dlt.createInfoLogEntry(internal_method_name, "Completed");
+				logger.createInfoLogEntry(internal_method_name, "Completed");
 				return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
 			} else {
 				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
 			}
 		} finally {
+			databaseBusinessObject.closeConnection();
 			if (!success) {
 				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
 			}
@@ -88,34 +92,29 @@ public class UserDataController {
 		UserDataResponse udr = new UserDataResponse();
 		
 		// Initialise logging -->
-		initLoggingObject(databaseBusinessObject, device_id);
+		databaseBusinessObject.setConnection();
+		databaseBusinessObject.setLogger(device_id);
+		logger = databaseBusinessObject.getLogger();
 
 		try {
 			try {
-				databaseBusinessObject.dlt.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 				success = true; // for finally
 				udr = databaseBusinessObject.getUserDataResponse(device_id);
 
 			}catch(Exception e) {
-				databaseBusinessObject.dlt.createErrorLogEntry(internal_method_name, e.getMessage());
+				logger.createErrorLogEntry(internal_method_name, e.getMessage());
 				throw new CustomException(e.getMessage());
 			}
-			databaseBusinessObject.dlt.createInfoLogEntry(internal_method_name, "Completed");
+			logger.createInfoLogEntry(internal_method_name, "Completed");
 			return new ResponseEntity<UserDataResponse>(udr,HttpStatus.OK);
 		} finally {
+			databaseBusinessObject.closeConnection();
 			if (!success) {
 				return new ResponseEntity<UserDataResponse>(HttpStatus.BAD_REQUEST);
 			}
 		}		
 	}	
-
-	private void initLoggingObject(DatabaseBusinessObject databaseBusinessObject, String device_id) {
-		
-		databaseBusinessObject.dlt = new LoggingTable();
-		databaseBusinessObject.dlt.setGlobal_id();
-		databaseBusinessObject.dlt.setDevice_id(device_id);
-		
-	}
 
 	
 }
