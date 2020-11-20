@@ -13,11 +13,20 @@ public class Database implements SharedPreferenceTableConstants,
                                  ImageTableConstants {
 
 	
-	private static String jdbcURL = "jdbc:postgresql://localhost:5432/takenote10";
+/* local
 	private static String serverURL = "jdbc:postgresql://localhost:5432/";
 	private static String jdbcUsername = "postgres";
 	private static String jdbcPassword = "s$cret";
-
+	private static String jdbcDatabase = "takenote10";
+	private static String jdbcURL = "jdbc:postgresql://localhost:5432/" + jdbcDatabase;
+*/
+//Heroku	
+	private static String serverURL = "jdbc:postgresql://ec2-23-23-36-227.compute-1.amazonaws.com:5432/";
+	private static String jdbcUsername = "aspzclogozgxnj";
+	private static String jdbcPassword = "33e1562e91d7f8f0a92b3e7a86f0f1350d7d2c58a81c34be12560ec7240e40af";
+	private static String jdbcDatabase = "ddkvne5drekhag";
+	private static String jdbcURL = "jdbc:postgresql://ec2-23-23-36-227.compute-1.amazonaws.com:5432/" + jdbcDatabase;
+	
 	public Connection getConnection() {
 		
 		String internal_method_name = Thread.currentThread() 
@@ -44,21 +53,21 @@ public class Database implements SharedPreferenceTableConstants,
 				// set auto-commit to TRUE in order to avoid creating a transaction block in which the database cannot be created
 				connection.setAutoCommit(true);
 				// we are now actually connected to the default database; 'postgres' itself. Use this connection to create the database    	          
-				createDatabase(connection);
+				createDatabase(connection, jdbcDatabase);
 				
 				//try to connect again but then to the database that was just created. Old connection is already closed in createDatabase method 
 				try {
 					Class.forName("org.postgresql.Driver");
 					connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
 					connection.setAutoCommit(false);
-					System.out.println("Connection to takenote10 closed? " + String.valueOf(connection.isClosed()));
+					System.out.println("Connection to database closed? " + String.valueOf(connection.isClosed()));
 				} catch (Exception e1) {
 					// this is no good. We cannot connect to the new database or something else went wrong
 					System.out.println("it's no use because " + e1.getMessage());
 					throw new CustomException(String.format("%s|%s", e1.getMessage(), internal_method_name));
 				}
 
-				System.out.println("database could be created, look for takenote10");
+				System.out.println("database could be created, look for" + jdbcDatabase);
 				
 			} catch (Exception e2) {
 				System.out.println("Something went wrong creating or connecting to the database " + e2.getMessage());
@@ -69,7 +78,7 @@ public class Database implements SharedPreferenceTableConstants,
 		return connection;
 	}	 
 
-	private void createDatabase(Connection connection) {
+	private void createDatabase(Connection connection, String databasename) {
 		
 		String internal_method_name = Thread.currentThread() 
 		        .getStackTrace()[1] 
@@ -77,7 +86,7 @@ public class Database implements SharedPreferenceTableConstants,
 		
 		try {
 			Statement statement = connection.createStatement();
-			statement.execute("CREATE DATABASE takenote10");
+			statement.execute("CREATE DATABASE " + databasename);
 			// close the connection now. We need to reconnect to the just created database and reset auto-commit to false
 			closeConnection(connection);
 		} catch(Exception e) {

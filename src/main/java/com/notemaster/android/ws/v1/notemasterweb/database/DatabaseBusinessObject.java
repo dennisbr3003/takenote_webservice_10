@@ -1,8 +1,6 @@
 package com.notemaster.android.ws.v1.notemasterweb.database;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
