@@ -1,10 +1,11 @@
-package com.notemaster.android.ws.v1.notemasterweb.database;
+package com.notemaster.android.ws.v1.notemasterweb.database.tables;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.LoggingTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
 public class LoggingTable implements LoggingTableConstants {

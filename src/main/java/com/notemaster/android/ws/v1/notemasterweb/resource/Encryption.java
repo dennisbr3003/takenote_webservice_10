@@ -11,8 +11,7 @@ public class Encryption {
         
 		try {
 
-            byte[] decodedText = Base64.getUrlDecoder().decode(text.getBytes());
-            text = new String(decodedText);
+			text = new String(Base64.getUrlDecoder().decode(text.getBytes()));
             String key = "Bar12345Bar12345"; // 128 bit key
             
             // Create key and cipher
@@ -52,7 +51,7 @@ public class Encryption {
                 sb.append((char) b);
             }
 
-            // the encrypted String
+            // Base64 url-encode the encrypted String so it's usable in JSONs and URLS
             return Base64.getUrlEncoder().encodeToString(sb.toString().getBytes());
         }
         catch(Exception e){

@@ -1,4 +1,4 @@
-package com.notemaster.android.ws.v1.notemasterweb.database;
+package com.notemaster.android.ws.v1.notemasterweb.database.constants;
 
 public interface ImageTableConstants {
 	static final String TABLE_PPI = "PASSPOINT_IMAGE";

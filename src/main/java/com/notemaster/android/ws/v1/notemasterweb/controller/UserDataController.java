@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DatabaseBusinessObject;
-import com.notemaster.android.ws.v1.notemasterweb.database.LoggingTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.LoggingTable;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
+import com.notemaster.android.ws.v1.notemasterweb.resource.Authentication;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
@@ -87,7 +88,11 @@ public class UserDataController {
 		String internal_method_name = Thread.currentThread() 
 				        .getStackTrace()[1] 
 						.getMethodName(); 	
+
 		
+		Authentication authentication = new Authentication();
+	    device_id = authentication.authenticate(device_id);
+	    
 		Boolean success = false;
 		UserDataResponse udr = new UserDataResponse();
 		

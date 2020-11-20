@@ -5,6 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.ImageTableConstants;
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.LoggingTableConstants;
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.NoteTableConstants;
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.SharedPreferenceTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
 public class Database implements SharedPreferenceTableConstants, 

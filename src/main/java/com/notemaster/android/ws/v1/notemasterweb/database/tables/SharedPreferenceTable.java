@@ -1,4 +1,4 @@
-package com.notemaster.android.ws.v1.notemasterweb.database;
+package com.notemaster.android.ws.v1.notemasterweb.database.tables;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.SharedPreferenceTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.ArrayItemObject;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;

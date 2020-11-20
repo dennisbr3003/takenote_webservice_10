@@ -46,6 +46,28 @@ public class ServletExceptionHandler extends ResponseEntityExceptionHandler {
 		
 	}					
 	
+	@ExceptionHandler(value={AuthenticationException.class}) // connect to user defined exception class specifically
+	public ResponseEntity<Object> handleException(AuthenticationException ex, WebRequest webrequest){
+		
+		String localErrorMessage = getErrorMessage(ex);		
+		
+		String errMessage;
+		String errEntity;
+		
+		if(localErrorMessage.split("\\|").length == 2) {
+			errMessage = localErrorMessage.split("\\|")[0];
+			errEntity = localErrorMessage.split("\\|")[1];			
+		}else {
+			errMessage = localErrorMessage;
+			errEntity = "unknown";
+		}
+		
+		ErrorObject error_object = new ErrorObject(new Date(), errMessage, errEntity);
+		
+		return new ResponseEntity<>(error_object, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+		
+	}						
+	
 	private String getErrorMessage(Exception ex) {
 		if (ex.getLocalizedMessage() == null) {
 			return ex.toString();

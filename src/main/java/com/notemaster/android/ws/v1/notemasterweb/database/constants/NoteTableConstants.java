@@ -1,4 +1,4 @@
-package com.notemaster.android.ws.v1.notemasterweb.database;
+package com.notemaster.android.ws.v1.notemasterweb.database.constants;
 
 public interface NoteTableConstants {
 	static final String TABLE_NTS = "NOTE";

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
-import com.notemaster.android.ws.v1.notemasterweb.resource.Encryption;
+import com.notemaster.android.ws.v1.notemasterweb.resource.Authentication;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 
 @RestController
@@ -62,12 +62,9 @@ public class NoteMasterController {
 				.getStackTrace()[1] 
 						.getMethodName(); 		
 		
-	    Encryption encryption = new Encryption();
-		
-	    // device_id is encrypted
-		String decrypted_device_id = encryption.decrypt(device_id);
-		device_id = decrypted_device_id;
-		
+		Authentication authentication = new Authentication();
+	    device_id = authentication.authenticate(device_id);
+	    
 		// Initialise logging -->
 		databaseBusinessObject.setConnection();
 		databaseBusinessObject.setLogger(device_id);

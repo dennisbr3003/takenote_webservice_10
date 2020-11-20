@@ -1,6 +1,11 @@
 package com.notemaster.android.ws.v1.notemasterweb.database;
 
 import java.sql.Connection;
+
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.ImageTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.LoggingTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.NoteTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.SharedPreferenceTable;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
