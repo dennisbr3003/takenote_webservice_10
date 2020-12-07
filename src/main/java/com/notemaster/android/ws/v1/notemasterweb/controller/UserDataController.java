@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.notemaster.android.ws.v1.notemasterweb.database.DatabaseBusinessObject;
-import com.notemaster.android.ws.v1.notemasterweb.database.tables.LoggingTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
+import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.resource.Authentication;
+import com.notemaster.android.ws.v1.notemasterweb.resource.LoggerTakeNote;
+import com.notemaster.android.ws.v1.notemasterweb.resource.Session;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
@@ -24,37 +26,41 @@ import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 @RequestMapping("notemaster/userdata") // translates to http://192.168.178.69:8080/notemaster/userdata
 public class UserDataController {
 
-	private DatabaseBusinessObject databaseBusinessObject = new DatabaseBusinessObject();
-	private LoggingTable logger;
+	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
 	
+	private IDatabaseBusinessObject databaseBusinessObject = factory.getDatabaseBusinessObject();
+		
 	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE,
 			                 MediaType.APPLICATION_XML_VALUE }, 
 			     produces = {MediaType.APPLICATION_JSON_VALUE, 
 					         MediaType.APPLICATION_XML_VALUE })
+	
 	public ResponseEntity<DefaultResponse> setUserData(@RequestBody UserDataPayload udp) {
 
-		
 		Boolean success = false;
 		DefaultResponse defaultResponse = new DefaultResponse();		
 		
-		String internal_method_name = Thread.currentThread() 
-				        .getStackTrace()[1] 
-						.getMethodName(); 
-
+		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
+		
+	    LoggerTakeNote logger = new LoggerTakeNote();	
+	    
+	
 		try {
+			
+			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
+			
 			if (udp != null) {
 
 				try {
 
-					// Initialise logging -->
-					databaseBusinessObject.setConnection();
-					databaseBusinessObject.setLogger(udp.getDevice_id());
-					logger = databaseBusinessObject.getLogger();
-
+					logger.setDevice_id(udp.getDevice_id());
+					logger.setTransaction_id();
+					
 					// create first log entry -->
 					logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 
 					success = true; // <-- for finally
+					databaseBusinessObject.setLogger(logger);
 					databaseBusinessObject.processUserDataPayload(udp);
 
 					// produce answer for client -->
@@ -73,7 +79,6 @@ public class UserDataController {
 				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
 			}
 		} finally {
-			databaseBusinessObject.closeConnection();
 			if (!success) {
 				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
 			}
@@ -85,23 +90,25 @@ public class UserDataController {
 				      	    MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<UserDataResponse> getUserData(@PathVariable String device_id) {
 
-		String internal_method_name = Thread.currentThread() 
-				        .getStackTrace()[1] 
-						.getMethodName(); 	
-
+		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
 		
 		Authentication authentication = new Authentication();
 	    device_id = authentication.authenticate(device_id);
 	    
 		Boolean success = false;
 		UserDataResponse udr = new UserDataResponse();
+        
+		LoggerTakeNote logger = new LoggerTakeNote();	
 		
-		// Initialise logging -->
-		databaseBusinessObject.setConnection();
-		databaseBusinessObject.setLogger(device_id);
-		logger = databaseBusinessObject.getLogger();
-
 		try {
+			
+			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
+			
+			logger.setDevice_id(device_id);
+			logger.setTransaction_id();			
+
+			databaseBusinessObject.setLogger(logger);
+
 			try {
 				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 				success = true; // for finally
@@ -114,7 +121,6 @@ public class UserDataController {
 			logger.createInfoLogEntry(internal_method_name, "Completed");
 			return new ResponseEntity<UserDataResponse>(udr,HttpStatus.OK);
 		} finally {
-			databaseBusinessObject.closeConnection();
 			if (!success) {
 				return new ResponseEntity<UserDataResponse>(HttpStatus.BAD_REQUEST);
 			}
