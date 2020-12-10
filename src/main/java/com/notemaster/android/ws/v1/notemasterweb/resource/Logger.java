@@ -7,7 +7,7 @@ public abstract class Logger implements ILoggerMethods,ILoggerConstants {
 
 	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
 	public ILoggingTable loggingTable = factory.getLoggingTable();
-
+//test
 	public Logger() {
 		
 	}	
