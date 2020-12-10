@@ -7,39 +7,23 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class Encryption {
     
-	public String decrypt(String text) {
+	public String decrypt(String text) throws Exception {
         
-		try {
-
-			text = new String(Base64.getUrlDecoder().decode(text.getBytes()));
-            String key = "Bar12345Bar12345"; // 128 bit key
-            
-            // Create key and cipher
-            Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-
-            byte[] bb = new byte[text.length()];
-            for (int i=0; i<text.length(); i++) {
-                bb[i] = (byte) text.charAt(i);
-            }
-            
-            cipher.init(Cipher.DECRYPT_MODE, aesKey);
-            return new String(cipher.doFinal(bb));
-                        
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return "";
+		return decrypt(text, "Bar12345Bar12345");
+		
     }
 
-    public String encrypt(String text){
-    	
+    public String encrypt(String text) throws Exception {
+  	
+    	return encrypt(text, "Bar12345Bar12345");
+    }
+
+    public String encrypt(String text, String EncryptionKey) throws Exception {
+	   	
         try {
-            
-            String key = "Bar12345Bar12345"; // 128 bit key
-            
+                        
             // Create key and cipher
-            Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
+            Key aesKey = new SecretKeySpec(EncryptionKey.getBytes(), "AES");
             Cipher cipher = Cipher.getInstance("AES");
             
             // encrypt the text
@@ -55,9 +39,33 @@ public class Encryption {
             return Base64.getUrlEncoder().encodeToString(sb.toString().getBytes());
         }
         catch(Exception e){
-            e.printStackTrace();
+        	throw e;
         }
-        return "";
-    }
 
+    }    
+    
+	public String decrypt(String text, String EncryptionKey) throws Exception {
+
+		// Encrypted strings must be Base64 encoded
+		try {
+
+			text = new String(Base64.getUrlDecoder().decode(text.getBytes()));
+            
+            // Create key and cipher
+            Key aesKey = new SecretKeySpec(EncryptionKey.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+
+            byte[] bb = new byte[text.length()];
+            for (int i=0; i<text.length(); i++) {
+                bb[i] = (byte) text.charAt(i);
+            }
+            
+            cipher.init(Cipher.DECRYPT_MODE, aesKey);
+            return new String(cipher.doFinal(bb));
+                        
+        }catch (Exception e){
+        	throw e;
+        }
+    }    
+    
 }

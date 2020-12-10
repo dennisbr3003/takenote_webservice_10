@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
@@ -88,12 +89,17 @@ public class UserDataController {
 	@GetMapping(path = "/{device_id}", 
 			    produces = {MediaType.APPLICATION_JSON_VALUE, 
 				      	    MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<UserDataResponse> getUserData(@PathVariable String device_id) {
+	public ResponseEntity<UserDataResponse> getUserData(@PathVariable String device_id,
+			                                            @RequestParam (required=false, defaultValue="false") boolean OverrideEncryption) {
 
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
 		
-		Authentication authentication = new Authentication();
-	    device_id = authentication.authenticate(device_id);
+	    System.out.println("Override encryption " + String.valueOf(OverrideEncryption));
+	    
+	    if(!OverrideEncryption) {
+	    	Authentication authentication = new Authentication();
+	    	device_id = authentication.authenticate(device_id);
+	    }
 	    
 		Boolean success = false;
 		UserDataResponse udr = new UserDataResponse();

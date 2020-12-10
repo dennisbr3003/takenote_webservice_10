@@ -8,10 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.PSQLDatabase;
-import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
+//import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.database.PSQLDatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
@@ -40,7 +41,7 @@ public class NoteMasterController {
 
 			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
 			
-			DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
+			//DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
 			
 			defaultResponse.setStatus("1");
 			defaultResponse.setEntity("notemaster/ping");
@@ -62,12 +63,18 @@ public class NoteMasterController {
 
 	@GetMapping(path = "/{argument}/{device_id}", produces = {MediaType.APPLICATION_JSON_VALUE, 
             												  MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<DefaultResponse> deviceHasData(@PathVariable String argument, @PathVariable String device_id) {
+	public ResponseEntity<DefaultResponse> deviceHasData(@PathVariable String argument, 
+			                                             @PathVariable String device_id, 
+			                                             @RequestParam (required=false, defaultValue="false") boolean OverrideEncryption) {
 
 	    String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 		
 		
-		Authentication authentication = new Authentication();
-	    device_id = authentication.authenticate(device_id);
+	    System.out.println("Override encryption " + String.valueOf(OverrideEncryption));
+	    
+	    if(!OverrideEncryption) {
+	    	Authentication authentication = new Authentication();
+	    	device_id = authentication.authenticate(device_id);
+	    }
 
 		try {
 			

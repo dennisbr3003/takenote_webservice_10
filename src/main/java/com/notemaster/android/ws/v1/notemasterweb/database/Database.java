@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
-import com.notemaster.android.ws.v1.notemasterweb.resource.InactivityScan;
 
 public abstract class Database {
 	

@@ -2,7 +2,7 @@ package com.notemaster.android.ws.v1.notemasterweb.resource;
 
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.AuthenticationException;
 
-public class Authentication implements resourceConstants {
+public class Authentication implements IAuthenticationConstants {
 
 	public Authentication() {
 		super();
@@ -11,23 +11,27 @@ public class Authentication implements resourceConstants {
 
 	public String authenticate(String encrypted_key) {
 
-	    String internal_method_name = Thread.currentThread() 
-				.getStackTrace()[1] 
-						.getMethodName(); 			
+	    String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 			
 		
 	    Encryption encryption = new Encryption();
 		
 	    String timestamp;
 	    String device_id;
-	    String decrypted_key;
+	    String decrypted_key = "";
 	    String[] parts;
 	    
+	    // this call throws it's own exception
 		try {
 			decrypted_key = encryption.decrypt(encrypted_key);
+		} catch (Exception ex) {
+			throw new AuthenticationException(String.format("%s|%s", String.format("Decryption error: %s", ex.getMessage()), internal_method_name));
+		}
+		
+		try {
 			parts = decrypted_key.split("-");			
 			timestamp = parts[0];
 			device_id = parts[1];
-		} catch (Exception e) {
+	    } catch (Exception e) {
 			throw new AuthenticationException(String.format("%s|%s", String.format("%s (%s)", "Authentication error: invalid key", e.getMessage()), internal_method_name));	
 		}
 						
@@ -45,3 +49,4 @@ public class Authentication implements resourceConstants {
 	}
 	
 }
+
