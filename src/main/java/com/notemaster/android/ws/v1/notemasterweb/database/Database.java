@@ -31,14 +31,7 @@ public abstract class Database {
 	public Connection getConnection() {
 		
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName();
-        /*
-		//start inactivity scan -->
-		System.out.println("Start inactivity scanner");
-		if(InactivityScan.getInstance().getKill_switch()) {
-			InactivityScan.getInstance().setKill_switch(false);
-			InactivityScan.getInstance().run();
-		}		
-		*/
+
 		if (connection != null) { 
 			return this.connection;
 		}

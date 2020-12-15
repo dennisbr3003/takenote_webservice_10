@@ -7,17 +7,13 @@ import java.sql.Statement;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
 public class PSQLDatabase extends Database {
-	
-	// connection parameters
-	private static String jdbcUsername = "aspzclogozgxnj";
-	private static String jdbcPassword = "33e1562e91d7f8f0a92b3e7a86f0f1350d7d2c58a81c34be12560ec7240e40af";
-	private static String jdbcDatabase = "ddkvne5drekhag";
-	private static String serverURL = "jdbc:postgresql://ec2-23-23-36-227.compute-1.amazonaws.com:5432/";
-	private static String jdbcURL = "jdbc:postgresql://ec2-23-23-36-227.compute-1.amazonaws.com:5432/" + jdbcDatabase;
-	
+
 	// this will make this class a singleton. This means one connection each time this program is run
 	private static PSQLDatabase instance = new PSQLDatabase();
 
+	DataSourceCredentials dataSourceCredentials = new DataSourceCredentials();
+	Credentials credentials = dataSourceCredentials.createDataSourceCredentials("PSQL");	
+	
 	// private constructor makes it a singleton
 	private PSQLDatabase() {
 
@@ -33,12 +29,12 @@ public class PSQLDatabase extends Database {
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName();				
 
 		Connection connection = null;
-
+		
 		try {
-			Class.forName("org.postgresql.Driver");
-			connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
+			Class.forName(credentials.getDriver());
+			connection = DriverManager.getConnection(String.format("%s%s", credentials.getUrl(), credentials.getCatalog()), credentials.getUser(), credentials.getPwd());
 			connection.setAutoCommit(false);
-			System.out.println("Connected to database " + jdbcURL);
+			System.out.println("Connected to database " + String.format("%s%s", credentials.getUrl(), credentials.getCatalog()));
 			this.connection = connection;
 
 		} catch (Exception e) {
@@ -47,19 +43,19 @@ public class PSQLDatabase extends Database {
 				
 				System.out.println("Error connecting to database " + e.getMessage());
 
-				Class.forName("org.postgresql.Driver");
+				Class.forName(credentials.getDriver());
 				// (re) connect to the server (not a specific database) to establish a connection with which we can create a database
-				connection = DriverManager.getConnection(serverURL, jdbcUsername, jdbcPassword);
+				connection = DriverManager.getConnection(credentials.getUrl(), credentials.getUser(), credentials.getPwd());
 				// set auto-commit to TRUE in order to avoid creating a transaction block in which the database cannot be created
 				connection.setAutoCommit(true);
 				// we are now actually connected to the default database; 'postgres' itself. Use this connection to create the database    	          
-				createDatabase(jdbcDatabase);
+				createDatabase(credentials.getCatalog());
 				// close the connection now. We need to reconnect to the just created database and reset auto-commit to false
 				disconnect();				
 				//try to connect again but then to the database that was just created. Old connection is already closed in createDatabase method 
 				try {
 					Class.forName("org.postgresql.Driver");
-					connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
+					connection = DriverManager.getConnection(String.format("%s%s", credentials.getUrl(), credentials.getCatalog()), credentials.getUser(), credentials.getPwd());
 					connection.setAutoCommit(false);
 				} catch (Exception e1) {
 					// this is no good. We cannot connect to the new database or something else went wrong
@@ -67,7 +63,7 @@ public class PSQLDatabase extends Database {
 					throw new CustomException(String.format("%s|%s", e1.getMessage(), internal_method_name));
 				}
 
-				System.out.println("database could be created, look for" + jdbcDatabase);
+				System.out.println("database could be created, look for" + credentials.catalog);
 				
 			} catch (Exception e2) {
 				System.out.println("Something went wrong creating or connecting to the database " + e2.getMessage());
@@ -82,7 +78,7 @@ public class PSQLDatabase extends Database {
 		
 		try {
 			Statement statement = connection.createStatement();
-			statement.execute("CREATE DATABASE " + databasename);
+			statement.execute("CREATE DATABASE " + credentials.getCatalog());
 		} catch(Exception e) {
 			System.out.println("Exception " + e.getMessage());
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));

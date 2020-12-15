@@ -6,12 +6,10 @@ import java.sql.DriverManager;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
 public class H2Database extends Database {
-	// connection parameters
-	//private static String jdbcURL = "jdbc:h2:file:/data/takenote10db;AUTO_SERVER=true"; //file and multiple connections 
-	private static String jdbcURL = "jdbc:h2:mem:takenote10";         //(in memmory) 
-	private static String jdbcUsername = "sa";
-	private static String jdbcPassword = "";
 
+	DataSourceCredentials dataSourceCredentials = new DataSourceCredentials();
+	Credentials credentials = dataSourceCredentials.createDataSourceCredentials("H2M");
+	
 	// this will make this class a singleton. This means one connection each time this program is run
 	private static H2Database instance = new H2Database();
 
@@ -32,8 +30,8 @@ public class H2Database extends Database {
 		Connection connection = null;
 
 		try {
-			connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
-			System.out.println("Connected to database " + jdbcURL);
+			connection = DriverManager.getConnection(credentials.getUrl(), credentials.getUser(), credentials.getPwd());
+			System.out.println("Connected to database " + credentials.getUrl());
 			this.connection = connection;
 
 		} catch (Exception e) {

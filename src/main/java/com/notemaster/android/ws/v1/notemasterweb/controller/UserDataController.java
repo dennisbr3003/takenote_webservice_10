@@ -1,7 +1,5 @@
 package com.notemaster.android.ws.v1.notemasterweb.controller;
 
-import java.util.UUID;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +22,7 @@ import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
 @RestController
-@RequestMapping("notemaster/userdata") // translates to http://192.168.178.69:8080/notemaster/userdata
+@RequestMapping("notemaster/userdata") 
 public class UserDataController {
 
 	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
@@ -36,76 +34,71 @@ public class UserDataController {
 			     produces = {MediaType.APPLICATION_JSON_VALUE, 
 					         MediaType.APPLICATION_XML_VALUE })
 	
-	public ResponseEntity<DefaultResponse> setUserData(@RequestBody UserDataPayload udp) {
+	// translates to http://192.168.178.69:8080/notemaster/userdata POST
+	
+	public ResponseEntity<DefaultResponse> setUserData(@RequestBody UserDataPayload udp) 
+	{
 
-		Boolean success = false;
-		DefaultResponse defaultResponse = new DefaultResponse();		
-		
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 		
-	    LoggerTakeNote logger = new LoggerTakeNote();	
-	    
-	
-		try {
-			
-			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
-			
-			if (udp != null) {
+		DefaultResponse defaultResponse = new DefaultResponse();		
+		LoggerTakeNote logger = new LoggerTakeNote();	
 
-				try {
+		if (udp != null) {
 
-					logger.setDevice_id(udp.getDevice_id());
-					logger.setTransaction_id();
-					
-					// create first log entry -->
-					logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+			try {
 
-					success = true; // <-- for finally
-					databaseBusinessObject.setLogger(logger);
-					databaseBusinessObject.processUserDataPayload(udp);
+				Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
 
-					// produce answer for client -->
-					defaultResponse.setStatus("1");
-					defaultResponse.setEntity("notemaster/userdata/post");
-					defaultResponse.setKey(UUID.randomUUID().toString());
-					defaultResponse.setRemark("JSON payload was consumed by method setSharedPreference");
+				logger.setDevice_id(udp.getDevice_id());
+				logger.setTransaction_id();
 
-				}catch(Exception e) {
-					logger.createErrorLogEntry(internal_method_name, e.getMessage());
-					throw new CustomException(e.getMessage());
-				}
+				// create first log entry -->
+				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+
+				databaseBusinessObject.setLogger(logger);
+				databaseBusinessObject.processUserDataPayload(udp);
+
+				// produce answer for client -->
+				defaultResponse.setStatus("1");
+				defaultResponse.setEntity("userdata (post)");
+				defaultResponse.setKey("");
+				defaultResponse.setRemark("success");
+
 				logger.createInfoLogEntry(internal_method_name, "Completed");
 				return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
-			} else {
-				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
+				
+			}catch(Exception e) {
+				
+				logger.createErrorLogEntry(internal_method_name, e.getMessage());
+				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+				
 			}
-		} finally {
-			if (!success) {
-				return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);
-			}
-		}		
+			
+		} else {			
+			return new ResponseEntity<DefaultResponse>(HttpStatus.BAD_REQUEST);			
+		}
+	
 	}
 
-	@GetMapping(path = "/{device_id}", 
-			    produces = {MediaType.APPLICATION_JSON_VALUE, 
-				      	    MediaType.APPLICATION_XML_VALUE })
+	@GetMapping(path = "/{device_id}", produces = {MediaType.APPLICATION_JSON_VALUE, 
+				      	                           MediaType.APPLICATION_XML_VALUE })
+	
+	// translates to http://192.168.178.69:8080/notemaster/userdata GET
+	
 	public ResponseEntity<UserDataResponse> getUserData(@PathVariable String device_id,
 			                                            @RequestParam (required=false, defaultValue="false") boolean OverrideEncryption) {
 
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
+			    
+		UserDataResponse udr = new UserDataResponse();
+		LoggerTakeNote logger = new LoggerTakeNote();			
 		
-	    System.out.println("Override encryption " + String.valueOf(OverrideEncryption));
-	    
 	    if(!OverrideEncryption) {
 	    	Authentication authentication = new Authentication();
 	    	device_id = authentication.authenticate(device_id);
 	    }
-	    
-		Boolean success = false;
-		UserDataResponse udr = new UserDataResponse();
-        
-		LoggerTakeNote logger = new LoggerTakeNote();	
-		
+	    		
 		try {
 			
 			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
@@ -115,23 +108,16 @@ public class UserDataController {
 
 			databaseBusinessObject.setLogger(logger);
 
-			try {
-				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-				success = true; // for finally
-				udr = databaseBusinessObject.getUserDataResponse(device_id);
+			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));				
+     		udr = databaseBusinessObject.getUserDataResponse(device_id);
 
-			}catch(Exception e) {
-				logger.createErrorLogEntry(internal_method_name, e.getMessage());
-				throw new CustomException(e.getMessage());
-			}
 			logger.createInfoLogEntry(internal_method_name, "Completed");
 			return new ResponseEntity<UserDataResponse>(udr,HttpStatus.OK);
-		} finally {
-			if (!success) {
-				return new ResponseEntity<UserDataResponse>(HttpStatus.BAD_REQUEST);
-			}
-		}		
+			
+		} catch (Exception e) {			
+			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));		
+		}
+	
 	}	
-
 	
 }

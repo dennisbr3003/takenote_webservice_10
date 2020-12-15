@@ -2,7 +2,7 @@ package com.notemaster.android.ws.v1.notemasterweb.response;
 
 public class DefaultResponse {
 	
-	private String responsetype = "notemaster_v1";  
+	private String responsetype = "takenote10";  
 	private String status;
 	private String entity;
 	private String key;	

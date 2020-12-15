@@ -6,6 +6,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
+import com.notemaster.android.ws.v1.notemasterweb.database.DataSourceCredentials;
 import com.notemaster.android.ws.v1.notemasterweb.database.PSQLDatabase;
 //import com.notemaster.android.ws.v1.notemasterweb.resource.InactivityScan;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
@@ -39,11 +40,6 @@ public class NotemasterwebApplication {
 			System.out.println("Table definitions checked (and tables where added if missing)");
 		}
 		
-		//PSQLDatabase.getInstance().disconnect();
-		
-		//start timer thread
-		//InactivityScan inactivityScan = new InactivityScan();
-		//inactivityScan.run();
 	}	
 	
 }
