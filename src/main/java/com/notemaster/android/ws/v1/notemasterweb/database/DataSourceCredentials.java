@@ -1,21 +1,22 @@
 package com.notemaster.android.ws.v1.notemasterweb.database;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 
 public class DataSourceCredentials {
 
 	private Credentials readCredentials(String databaseType) {
 		
-		File MyTextFile = new File("config/datasource.config");
-		String line;
-		
 		Credentials credentials = new Credentials();
+
+		String line;
+		InputStream in = getClass().getResourceAsStream("datasource.config"); 
 		
-		try(BufferedReader br = new BufferedReader(new FileReader(MyTextFile))) {
+		try(BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 			
 			String stopCondition = "";
 
@@ -88,7 +89,21 @@ public class DataSourceCredentials {
 	}
 	
 	public Credentials createDataSourceCredentials(String databaseType) {
+
+		String line;
+		InputStream in = getClass().getResourceAsStream("datasource.config"); 
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		try {
+			while((line = br.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return readCredentials(databaseType);
+
 	}
 	
 }

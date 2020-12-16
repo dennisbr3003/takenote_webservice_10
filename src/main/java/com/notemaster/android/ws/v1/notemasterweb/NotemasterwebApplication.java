@@ -6,9 +6,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
-import com.notemaster.android.ws.v1.notemasterweb.database.DataSourceCredentials;
 import com.notemaster.android.ws.v1.notemasterweb.database.PSQLDatabase;
-//import com.notemaster.android.ws.v1.notemasterweb.resource.InactivityScan;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
 
 @SpringBootApplication
