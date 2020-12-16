@@ -14,7 +14,14 @@ public class DataSourceCredentials {
 		Credentials credentials = new Credentials();
 
 		String line;
-		InputStream in = getClass().getResourceAsStream("datasource.config"); 
+		InputStream in;
+		
+		try {
+			in = getClass().getResourceAsStream("datasource.config");				
+		} catch(Exception e) {
+			System.out.println("datasource.config (Exception) : " + e.getMessage());
+			return null;
+		} 
 		
 		try(BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 			
@@ -90,18 +97,6 @@ public class DataSourceCredentials {
 	
 	public Credentials createDataSourceCredentials(String databaseType) {
 
-		String line;
-		InputStream in = getClass().getResourceAsStream("datasource.config"); 
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		try {
-			while((line = br.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		return readCredentials(databaseType);
 
 	}
