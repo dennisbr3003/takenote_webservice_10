@@ -7,8 +7,8 @@ import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 
 public class H2Database extends Database {
 
-	DataSourceCredentials dataSourceCredentials = new DataSourceCredentials();
-	Credentials credentials = dataSourceCredentials.createDataSourceCredentials("H2M");
+	DataSourceConfigurations dataSourceCredentials = new DataSourceConfigurations();
+	Configuration configuration = dataSourceCredentials.createDataSourceCredentials("H2M");
 	
 	// this will make this class a singleton. This means one connection each time this program is run
 	private static H2Database instance = new H2Database();
@@ -30,8 +30,8 @@ public class H2Database extends Database {
 		Connection connection = null;
 
 		try {
-			connection = DriverManager.getConnection(credentials.getUrl(), credentials.getUser(), credentials.getPwd());
-			System.out.println("Connected to database " + credentials.getUrl());
+			connection = DriverManager.getConnection(configuration.getServer(), configuration.getUser(), configuration.getPwd());
+			System.out.println("Connected to database " + configuration.getType());
 			this.connection = connection;
 
 		} catch (Exception e) {

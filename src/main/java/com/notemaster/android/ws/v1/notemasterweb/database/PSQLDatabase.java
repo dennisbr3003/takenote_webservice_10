@@ -11,8 +11,8 @@ public class PSQLDatabase extends Database {
 	// this will make this class a singleton. This means one connection each time this program is run
 	private static PSQLDatabase instance = new PSQLDatabase();
 
-	DataSourceCredentials dataSourceCredentials = new DataSourceCredentials();
-	Credentials credentials = dataSourceCredentials.createDataSourceCredentials("PSQL");	
+	DataSourceConfigurations dataSourceCredentials = new DataSourceConfigurations();
+	Configuration configuration = dataSourceCredentials.createDataSourceCredentials("PSQL");	
 	
 	// private constructor makes it a singleton
 	private PSQLDatabase() {
@@ -31,10 +31,10 @@ public class PSQLDatabase extends Database {
 		Connection connection = null;
 		
 		try {
-			Class.forName(credentials.getDriver());
-			connection = DriverManager.getConnection(String.format("%s%s", credentials.getUrl(), credentials.getCatalog()), credentials.getUser(), credentials.getPwd());
+			Class.forName(configuration.getDriver());
+			connection = DriverManager.getConnection(String.format("%s%s", configuration.getServer(), configuration.getCatalog()), configuration.getUser(), configuration.getPwd());
 			connection.setAutoCommit(false);
-			System.out.println("Connected to database " + String.format("%s%s", credentials.getUrl(), credentials.getCatalog()));
+			System.out.println("Connected to database " + configuration.getType());
 			this.connection = connection;
 
 		} catch (Exception e) {
@@ -43,19 +43,19 @@ public class PSQLDatabase extends Database {
 				
 				System.out.println("Error connecting to database " + e.getMessage());
 
-				Class.forName(credentials.getDriver());
+				Class.forName(configuration.getDriver());
 				// (re) connect to the server (not a specific database) to establish a connection with which we can create a database
-				connection = DriverManager.getConnection(credentials.getUrl(), credentials.getUser(), credentials.getPwd());
+				connection = DriverManager.getConnection(configuration.getServer(), configuration.getUser(), configuration.getPwd());
 				// set auto-commit to TRUE in order to avoid creating a transaction block in which the database cannot be created
 				connection.setAutoCommit(true);
 				// we are now actually connected to the default database; 'postgres' itself. Use this connection to create the database    	          
-				createDatabase(credentials.getCatalog());
+				createDatabase(configuration.getCatalog());
 				// close the connection now. We need to reconnect to the just created database and reset auto-commit to false
 				disconnect();				
 				//try to connect again but then to the database that was just created. Old connection is already closed in createDatabase method 
 				try {
 					Class.forName("org.postgresql.Driver");
-					connection = DriverManager.getConnection(String.format("%s%s", credentials.getUrl(), credentials.getCatalog()), credentials.getUser(), credentials.getPwd());
+					connection = DriverManager.getConnection(String.format("%s%s", configuration.getServer(), configuration.getCatalog()), configuration.getUser(), configuration.getPwd());
 					connection.setAutoCommit(false);
 				} catch (Exception e1) {
 					// this is no good. We cannot connect to the new database or something else went wrong
@@ -63,7 +63,7 @@ public class PSQLDatabase extends Database {
 					throw new CustomException(String.format("%s|%s", e1.getMessage(), internal_method_name));
 				}
 
-				System.out.println("database could be created, look for" + credentials.catalog);
+				System.out.println("database could be created, look for" + configuration.getCatalog());
 				
 			} catch (Exception e2) {
 				System.out.println("Something went wrong creating or connecting to the database " + e2.getMessage());
@@ -78,7 +78,7 @@ public class PSQLDatabase extends Database {
 		
 		try {
 			Statement statement = connection.createStatement();
-			statement.execute("CREATE DATABASE " + credentials.getCatalog());
+			statement.execute("CREATE DATABASE " + configuration.getCatalog());
 		} catch(Exception e) {
 			System.out.println("Exception " + e.getMessage());
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
