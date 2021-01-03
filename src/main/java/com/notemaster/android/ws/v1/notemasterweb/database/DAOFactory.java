@@ -4,6 +4,7 @@ import com.notemaster.android.ws.v1.notemasterweb.database.tables.IGraphicTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ILoggingTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.INoteTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ISharedPreferenceTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.IUserTable;
 
 public abstract class DAOFactory {
 
@@ -17,6 +18,7 @@ public abstract class DAOFactory {
 	public abstract ILoggingTable getLoggingTable();
 	public abstract INoteTable getNoteTable();
 	public abstract ISharedPreferenceTable getSharedPreferenceTable();
+	public abstract IUserTable getUserTable();
 	
 	public static DAOFactory getFactory(int type){
 		switch(type){

@@ -7,6 +7,7 @@ import com.notemaster.android.ws.v1.notemasterweb.database.tables.IGraphicTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ILoggingTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.INoteTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ISharedPreferenceTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.IUserTable;
 
 public class H2DAOFactory extends DAOFactory {
 	public IDatabaseBusinessObject getDatabaseBusinessObject() {
@@ -32,6 +33,12 @@ public class H2DAOFactory extends DAOFactory {
 	@Override
 	public ISharedPreferenceTable getSharedPreferenceTable() {
 		return new H2SharedPreferenceTableDAO();
+	}
+
+	@Override
+	public IUserTable getUserTable() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

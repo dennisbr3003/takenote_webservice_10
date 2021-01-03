@@ -7,7 +7,9 @@ import com.notemaster.android.ws.v1.notemasterweb.database.tables.PSQLImageTable
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.PSQLLoggingTableDAO;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.PSQLNoteTableDAO;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.PSQLSharedPreferenceTableDAO;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.PSQLUserTableDAO;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ISharedPreferenceTable;
+import com.notemaster.android.ws.v1.notemasterweb.database.tables.IUserTable;
 
 public class PSQLDAOFactory extends DAOFactory {
 	
@@ -33,6 +35,11 @@ public class PSQLDAOFactory extends DAOFactory {
 	@Override
 	public ISharedPreferenceTable getSharedPreferenceTable() {
 		return new PSQLSharedPreferenceTableDAO();
+	}
+
+	@Override
+	public IUserTable getUserTable() {
+		return new PSQLUserTableDAO();
 	}
 
 }

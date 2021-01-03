@@ -45,9 +45,6 @@ public class PSQLLoggingTableDAO implements LoggingTableConstants, ILoggingTable
 			preparedStatement.executeUpdate();
 
 		} catch (Exception e) {		
-			
-			System.out.println("öh neee");
-			
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}	
 		finally {

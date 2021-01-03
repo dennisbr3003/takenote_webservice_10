@@ -6,11 +6,13 @@ import com.notemaster.android.ws.v1.notemasterweb.database.constants.ImageTableC
 import com.notemaster.android.ws.v1.notemasterweb.database.constants.LoggingTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.database.constants.NoteTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.database.constants.SharedPreferenceTableConstants;
+import com.notemaster.android.ws.v1.notemasterweb.database.constants.UserTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.IGraphicTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.INoteTable;
 import com.notemaster.android.ws.v1.notemasterweb.database.tables.ISharedPreferenceTable;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
+import com.notemaster.android.ws.v1.notemasterweb.payload.WebUser;
 import com.notemaster.android.ws.v1.notemasterweb.resource.LoggerTakeNote;
 import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
@@ -19,6 +21,7 @@ public class H2DatabaseBusinessObject implements
  			 LoggingTableConstants,
  			 NoteTableConstants,
 			 ImageTableConstants, 
+			 UserTableConstants,
 			 IDatabaseBusinessObject
 { 
 
@@ -37,6 +40,7 @@ public class H2DatabaseBusinessObject implements
 		    createTable(TABLE_LOG);
 		    createTable(TABLE_NTS);
 		    createTable(TABLE_PPI);
+		    createTable(TABLE_USR);
 		    return true;
 		} catch(Exception e) {
 			System.out.println(e.getMessage());
@@ -154,7 +158,11 @@ public class H2DatabaseBusinessObject implements
 					"NULL DEFAULT CURRENT_TIMESTAMP, %s DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " + 
 					"CONSTRAINT %s PRIMARY KEY (%s,%s));", 
 					TABLE_PPI, PPI_ID, PPI_IMAGE_ID, PPI_NAME, PPI_VALUE, PPI_DTYPE, PPI_IMG_CREATED, PPI_IMG_UPDATED, PPI_CREATED, PPI_UPDATED, 
-					P_KEY_PPI, PPI_ID, PPI_NAME);			
+					P_KEY_PPI, PPI_ID, PPI_NAME);	
+		case TABLE_USR:
+			return String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, %s VARCHAR(255) NOT NULL, %s VARCHAR(255) NOT NULL, " + 
+					"%s VARCHAR(255), CONSTRAINT %s PRIMARY KEY (%s, %s));", 
+					TABLE_USR, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK, P_KEY_USR, USR_NAME, USR_DID);				
 		default:
 			return "";
 		}
@@ -184,6 +192,18 @@ public class H2DatabaseBusinessObject implements
 	@Override
 	public void setLogger(LoggerTakeNote logger) {
 		this.logger = logger;
+	}
+
+	@Override
+	public WebUser getWebUser(String webusercode) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addWebUser(WebUser webuser) {
+		// TODO Auto-generated method stub
+		
 	}		
 
 }
