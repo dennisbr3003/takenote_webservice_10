@@ -138,8 +138,8 @@ public class UserController {
 
 			// compare decoded parameter password to encoded and saved password in database --> 
 			if (!(passwordEncoder().matches(webuser.getPassword(), webuser_db.getPassword()))) {
-				logger.createErrorLogEntry(internal_method_name, "Authentification failed");
-				throw new AuthenticationException("Authentification failed, incorrect credentials");
+				logger.createErrorLogEntry(internal_method_name, "Authentication failed");
+				throw new AuthenticationException("Authentication failed, incorrect credentials");
 			}
 
 			// comparison succeeded, produce answer for client -->
