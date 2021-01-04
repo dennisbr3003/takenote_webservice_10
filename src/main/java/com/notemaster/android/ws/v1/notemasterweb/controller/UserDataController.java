@@ -1,8 +1,12 @@
 package com.notemaster.android.ws.v1.notemasterweb.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
+import com.notemaster.android.ws.v1.notemasterweb.exceptions.AuthenticationException;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
 import com.notemaster.android.ws.v1.notemasterweb.payload.WebUser;
@@ -119,64 +124,6 @@ public class UserDataController {
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));		
 		}
 	
-	}	
-	
-	@PostMapping(path = "/adduser", consumes = {MediaType.APPLICATION_JSON_VALUE,
-	                                            MediaType.APPLICATION_XML_VALUE },
-			                        produces = {MediaType.APPLICATION_JSON_VALUE, 
-                                                MediaType.APPLICATION_XML_VALUE })
-
-	// translates to http://192.168.178.69:8080/notemaster/userdata/adduser
-
-	public ResponseEntity<DefaultResponse> addUser(@RequestBody WebUser webuser,
-			                                       @RequestParam (required=false, defaultValue="false") boolean OverrideEncryption) {
-
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
-
-		// password and device_id are send encrypted. The name and remark are not 
-		String device_id="";
-		
-		LoggerTakeNote logger = new LoggerTakeNote();	
-		DefaultResponse defaultResponse = new DefaultResponse();	
-
-		device_id = webuser.getDevice_id();
-		
-		if(!OverrideEncryption) {
-			Authentication authentication = new Authentication();
-			device_id = authentication.authenticate(webuser.getDevice_id()); //override initial value if it is encrypted with the decrypted value
-			// the password has to be decrypted so it can be 
-			// re-encrypted using a encryption method supported by the webservice (BCrypt). 
-			webuser.setPassword(authentication.authenticate(webuser.getPassword()));
-			webuser.setDevice_id(device_id);
-		}
-
-		try {
-
-			Session.getInstance().setLastCallTimeStamp(System.currentTimeMillis());
-
-			logger.setDevice_id(device_id);
-			logger.setTransaction_id();			
-			
-			databaseBusinessObject.setLogger(logger);
-
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));				
-			
-			databaseBusinessObject.addWebUser(webuser);
-			
-			// produce answer for client -->
-			defaultResponse.setStatus("1");
-			defaultResponse.setEntity("adduser (post)");
-			defaultResponse.setKey("");
-			defaultResponse.setRemark("success");
-
-			logger.createInfoLogEntry(internal_method_name, "Completed");
-			
-			return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
-
-		} catch (Exception e) {			
-			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));		
-		}
-
 	}		
 	
 }

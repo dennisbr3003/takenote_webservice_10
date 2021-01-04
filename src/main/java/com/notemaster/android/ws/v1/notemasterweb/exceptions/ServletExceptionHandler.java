@@ -31,7 +31,7 @@ public class ServletExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		String errMessage;
 		String errEntity;
-		
+		System.out.println("Custom Exception");
 		if(localErrorMessage.split("\\|").length == 2) {
 			errMessage = localErrorMessage.split("\\|")[0];
 			errEntity = localErrorMessage.split("\\|")[1];			
@@ -53,7 +53,7 @@ public class ServletExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		String errMessage;
 		String errEntity;
-		
+
 		if(localErrorMessage.split("\\|").length == 2) {
 			errMessage = localErrorMessage.split("\\|")[0];
 			errEntity = localErrorMessage.split("\\|")[1];			
@@ -66,7 +66,8 @@ public class ServletExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		return new ResponseEntity<>(error_object, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
 		
-	}						
+	}				
+	
 	
 	private String getErrorMessage(Exception ex) {
 		if (ex.getLocalizedMessage() == null) {
