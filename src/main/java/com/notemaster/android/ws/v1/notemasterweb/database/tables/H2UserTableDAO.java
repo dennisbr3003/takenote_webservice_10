@@ -9,15 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.notemaster.android.ws.v1.notemasterweb.database.PSQLDatabase;
+import com.notemaster.android.ws.v1.notemasterweb.database.H2Database;
 import com.notemaster.android.ws.v1.notemasterweb.database.constants.UserTableConstants;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.WebUser;
 import com.notemaster.android.ws.v1.notemasterweb.resource.LoggerTakeNote;
 
-public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
-	
-	
+public class H2UserTableDAO implements UserTableConstants, IUserTable {
+
 	private LoggerTakeNote logger;
 
 	public LoggerTakeNote getLogger() {
@@ -26,14 +25,12 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 
 	public void setLogger(LoggerTakeNote logger) {
 		this.logger = logger;
-	}
-
-	public PSQLUserTableDAO() {
-		super();
-	}		
+	}	
+	
 
 	@Override
 	public WebUser getWebUser(String webusername) {
+		
 		WebUser webuser = null;
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 				
@@ -43,7 +40,7 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 		}
 		
 		try {
-			preparedStatement = PSQLDatabase.getInstance().getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
+			preparedStatement = H2Database.getInstance().getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
 					                                                TABLE_USR, USR_NAME, webusername));
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
@@ -65,18 +62,22 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 		return webuser;
 		
 	}
-	
-	
+
+	@Override
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		 return new BCryptPasswordEncoder();
+	}
+
 	@Override
 	@Autowired
 	public void insertWebUser(WebUser webuser) {
-
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 		
 		PreparedStatement preparedStatement = null;
 
 		try {
-			preparedStatement = PSQLDatabase.getInstance().getConnection().prepareStatement(
+			preparedStatement = H2Database.getInstance().getConnection().prepareStatement(
 					String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);", 
 							       TABLE_USR, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK));
 			
@@ -95,20 +96,15 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 		finally {
 			try {
 				preparedStatement.close();
-				PSQLDatabase.getInstance().getConnection().commit();
+				H2Database.getInstance().getConnection().commit();
 			} catch (SQLException e) {
 				if(logger != null) {
 					logger.createErrorLogEntry(internal_method_name, e.getMessage());
 				}
 				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			
 			}
-		}		
-	}	
+		}
+		
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }    
-	
-	
 }

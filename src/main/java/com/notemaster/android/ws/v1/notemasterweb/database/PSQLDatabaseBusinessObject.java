@@ -26,15 +26,12 @@ public class PSQLDatabaseBusinessObject implements
              IDatabaseBusinessObject
 {
 
-	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
-	
+	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);	
 	private ISharedPreferenceTable sharedPreferenceTable = factory.getSharedPreferenceTable();
 	private INoteTable noteTable = factory.getNoteTable(); 
 	private IGraphicTable imageTable = factory.getImageTable();
-	private IUserTable userTable = factory.getUserTable();
-	/* ombouwen */
-	
-
+	private IUserTable userTable = factory.getUserTable();	
+	private TypeIndependentResources typeIndependentResources = new TypeIndependentResources();	
 	private LoggerTakeNote logger;
 	
 	public LoggerTakeNote getLogger() {
@@ -120,129 +117,31 @@ public class PSQLDatabaseBusinessObject implements
 			System.out.println(e.getMessage());
 			return false;
 		}
-
 	}		
-	
-	// set userdata  
+	  	
+	@Override
+	public UserDataResponse getUserDataResponse(String device_id) {		
+		return typeIndependentResources.getUserDataResponse(device_id, logger, sharedPreferenceTable, noteTable, imageTable);				
+	}
+
 	@Override
 	public void processUserDataPayload(UserDataPayload udp) {
-
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Number of elements in array shared preferences", String.valueOf(udp.getShared_preferenceSize())));
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Number of elements in array notes", String.valueOf(udp.getNoteListSize())));
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Number of elements in array passpoint image (s)", String.valueOf(udp.getPassPointImageListSize())));
-		}
-		
-		sharedPreferenceTable.setLogger(logger);          // add logger to object
-		noteTable.setLogger(logger);                      // add logger to object
-		imageTable.setLogger(logger);                     // add logger to object		
-		
-		sharedPreferenceTable.saveSharedPreferences(udp); // first store the shared preferences
-		noteTable.saveNote(udp);                          // Store the notes
-		imageTable.saveImage(udp);                        // Store the pass point image(s)
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
-		}
-		
+		typeIndependentResources.processUserDataPayload(udp, logger, sharedPreferenceTable, noteTable, imageTable);		
 	}
 
 	@Override
-	public boolean deviceHasData(String device_id) {
-		
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		try {
-			
-			if(logger != null) {
-				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-			}			
-
-			sharedPreferenceTable.setLogger(logger);          // add logger to object
-			noteTable.setLogger(logger);                      // add logger to object
-			imageTable.setLogger(logger);                     // add logger to object			
-			
-			if(sharedPreferenceTable.isEmpty(device_id) && noteTable.isEmpty(device_id) && imageTable.isEmpty(device_id)) {
-	        	return false;
-	        }
-			
-			return true;
-		}
-		finally {
-			if(logger != null) {
-				logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
-			}
-		}
-		
+	public boolean deviceHasData(String device_id) {		
+		return typeIndependentResources.deviceHasData(device_id, logger, sharedPreferenceTable, noteTable, imageTable);		
 	}
 	
-	// get the webuser
+	@Override
 	public WebUser getWebUser(String webusercode) {
-
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-		}
-		
-		userTable.setLogger(logger);	
-		WebUser webuser = userTable.getWebUser(webusercode);
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
-		}
-		return webuser;
-	}	
-	
-	// add webuser
-	public void addWebUser(WebUser webuser) {
-		
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
-		}
-		
-		userTable.setLogger(logger);	
-		userTable.insertWebUser(webuser);
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
-		}		
+		return typeIndependentResources.getWebUser(webusercode, userTable, logger);
 	}
-	
-	
-	// get userdata
+
 	@Override
-	public UserDataResponse getUserDataResponse(String device_id) {
-		
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));		
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Set to retrieve values for device id", device_id));
-		}
-		
-		UserDataResponse udr = new UserDataResponse();
-		udr.setDevice_id(device_id);
-			
-		sharedPreferenceTable.setLogger(logger);          // add logger to object
-		noteTable.setLogger(logger);                      // add logger to object
-		imageTable.setLogger(logger);                     // add logger to object			
-		
-		udr = sharedPreferenceTable.getSharedPreferenceResponse(udr);
-		udr = noteTable.getNoteResponse(udr);
-		udr = imageTable.getImageResponse(udr);
-		
-		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
-		}
-		
-		return udr;
-		
+	public void addWebUser(WebUser webuser) {
+		typeIndependentResources.addWebUser(webuser, userTable, logger);		
 	}
 	
 }

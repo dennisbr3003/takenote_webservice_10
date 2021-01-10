@@ -10,7 +10,7 @@ public interface IUserTable {
 
 	void setLogger(LoggerTakeNote logger);
 
-	WebUser getWebUser(String webusercode);
+	WebUser getWebUser(String webusername);
 	
 	PasswordEncoder passwordEncoder();
 

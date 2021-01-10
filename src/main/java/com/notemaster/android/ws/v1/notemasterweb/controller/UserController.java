@@ -17,8 +17,10 @@ import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.AuthenticationException;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
+import com.notemaster.android.ws.v1.notemasterweb.exceptions.RequestException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.WebUser;
 import com.notemaster.android.ws.v1.notemasterweb.resource.Authentication;
+import com.notemaster.android.ws.v1.notemasterweb.resource.Encryption;
 import com.notemaster.android.ws.v1.notemasterweb.resource.LoggerTakeNote;
 import com.notemaster.android.ws.v1.notemasterweb.resource.Session;
 import com.notemaster.android.ws.v1.notemasterweb.response.DefaultResponse;
@@ -83,7 +85,11 @@ public class UserController {
 
 			return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
 
-		} catch (Exception e) {			
+		}
+		catch (RequestException e) {
+			throw new RequestException(String.format("%s|%s", e.getMessage(), internal_method_name));
+		}
+		catch (Exception e) {			
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));		
 		}
 
@@ -108,18 +114,27 @@ public class UserController {
 
 		LoggerTakeNote logger = new LoggerTakeNote();	
 		DefaultResponse defaultResponse = new DefaultResponse();	
-
+        Encryption encryption = new Encryption();
+        
 		device_id = webuser.getDevice_id();
 		name = webuser.getName();
 
 		if(!OverrideEncryption) {
 			Authentication authentication = new Authentication();
 			device_id = authentication.authenticate(webuser.getDevice_id()); //override initial value if it is encrypted with the decrypted value
+			
+			System.out.println(device_id);
+			
 			// the password has to be decrypted so it can be 
 			// re-encrypted using a encryption method supported by the webservice (BCrypt). 
-			webuser.setPassword(authentication.authenticate(webuser.getPassword()));
+			
+			try {
+				webuser.setPassword(encryption.decrypt(webuser.getPassword()));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new AuthenticationException("Authentication failed, decryption failed");
+			}
 			webuser.setDevice_id(device_id);
-			webuser.setName(authentication.authenticate(name));
 		}
 
 		try {
