@@ -34,6 +34,7 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 
 	@Override
 	public WebUser getWebUser(String webusername) {
+		
 		WebUser webuser = null;
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 				
@@ -50,7 +51,7 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 				// public WebUser(String code, String name, String password, String remark) 
 				webuser = new WebUser(rs.getString(USR_NAME), rs.getString(USR_PASSWRD), rs.getString(USR_DID), rs.getString(USR_REMARK));				
 		        break; /* just get the first */ 
-			}
+			}			
 			preparedStatement.close();
 		} catch (SQLException e) {
 			if(logger != null) {
@@ -59,9 +60,13 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
 		if(logger != null) {
-			logger.createInfoLogEntry(internal_method_name, String.format("%s %s (%s)", "Retrieved user", webuser.getName(), webuser.getDevice_id()));
+			if (webuser != null) {
+				logger.createInfoLogEntry(internal_method_name, String.format("%s %s (%s)", "Retrieved user", webuser.getName(), webuser.getDevice_id()));
+			} else {
+				logger.createInfoLogEntry(internal_method_name, String.format("User with name %s could not be found", webusername));
+			}
+			
 		}
-		
 		return webuser;
 		
 	}

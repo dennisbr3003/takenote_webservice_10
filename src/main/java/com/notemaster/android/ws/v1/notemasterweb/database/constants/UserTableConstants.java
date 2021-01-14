@@ -7,6 +7,8 @@ public interface UserTableConstants {
 	static final String USR_PASSWRD = "PASSWORD";
 	static final String USR_DID = "DEVICE_ID"; 
 	static final String USR_REMARK = "REMARK";
+	static final String USR_CREATED = "CREATED";
+	static final String USR_UPDATED = "UPDATED";	
 	static final String P_KEY_USR = "IDX_USR";
 	static final String A_KEY_USR = "IDX_NAME";
 	

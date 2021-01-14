@@ -50,15 +50,21 @@ public class UserController {
 
 		LoggerTakeNote logger = new LoggerTakeNote();	
 		DefaultResponse defaultResponse = new DefaultResponse();	
-
+		Encryption encryption = new Encryption();
+		
 		device_id = webuser.getDevice_id();
 
 		if(!OverrideEncryption) {
 			Authentication authentication = new Authentication();
 			device_id = authentication.authenticate(webuser.getDevice_id()); //override initial value if it is encrypted with the decrypted value
 			// the password has to be decrypted so it can be 
-			// re-encrypted using a encryption method supported by the webservice (BCrypt). 
-			webuser.setPassword(authentication.authenticate(webuser.getPassword()));
+			// re-encrypted using a encryption method supported by the webservice (BCrypt). 			
+			try {
+				webuser.setPassword(encryption.decrypt(webuser.getPassword()));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new AuthenticationException("Authentication failed, decryption failed");
+			}
 			webuser.setDevice_id(device_id);
 		}
 
@@ -72,7 +78,7 @@ public class UserController {
 			databaseBusinessObject.setLogger(logger);
 
 			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));				
-
+			
 			databaseBusinessObject.addWebUser(webuser);
 
 			// produce answer for client -->

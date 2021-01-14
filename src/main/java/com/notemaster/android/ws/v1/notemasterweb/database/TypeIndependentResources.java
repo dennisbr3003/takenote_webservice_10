@@ -30,16 +30,15 @@ public class TypeIndependentResources {
 	
 	public void addWebUser(WebUser webuser, IUserTable userTable, LoggerTakeNote logger) {
 		
-		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
+		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
 		
-		WebUser verificationUser;
+		WebUser verificationUser=null;
 		
 		if(logger != null) {
 			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 		}
 		
 		userTable.setLogger(logger);	
-		
 		// First try to get the user and check if the device_id's are the same -->
 		verificationUser = userTable.getWebUser(webuser.getName());
 		if ((verificationUser != null) && (verificationUser.getDevice_id().equals(webuser.getDevice_id()))){
