@@ -166,9 +166,14 @@ public class UserController extends DataController {
 			WebUser webuser_db = databaseBusinessObject.getWebUser(webuser);
 
 			// compare decoded parameter password to encoded and saved password in database --> 
-			if (!(passwordEncoder().matches(webuser.getPassword(), webuser_db.getPassword()))) {
-				logger.createErrorLogEntry(internal_method_name, "Authentication failed");
-				throw new AuthenticationException("Authentication failed, incorrect credentials");
+			if(webuser_db != null) {
+				if (!(passwordEncoder().matches(webuser.getPassword(), webuser_db.getPassword()))) {
+					logger.createErrorLogEntry(internal_method_name, "Authentication failed (incorrect credentials) ");
+					throw new AuthenticationException("Authentication failed (incorrect credentials)");
+				}
+			}else {
+				logger.createErrorLogEntry(internal_method_name, "Authentication failed (user not found)");
+				throw new AuthenticationException(String.format("User %s, %s could not be found. Authentification failed", webuser.getUser_id(), webuser.getName()));
 			}
 
 			logger.createInfoLogEntry(internal_method_name, "Completed");
