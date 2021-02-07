@@ -103,8 +103,6 @@ public class H2DatabaseBusinessObject implements
 		} catch(Exception e) {
 			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
 		}
-
-
 	}
 
 	@Override
@@ -133,13 +131,18 @@ public class H2DatabaseBusinessObject implements
 	}	
 	
 	@Override
-	public WebUser getWebUser(String webusercode) {
-		return typeIndependentResources.getWebUser(webusercode, userTable, logger);
+	public WebUser getWebUser(WebUser webuser) {
+		return typeIndependentResources.getWebUser(webuser, userTable, logger);
 	}
 
 	@Override
-	public void addWebUser(WebUser webuser) {
-		typeIndependentResources.addWebUser(webuser, userTable, logger);		
+	public void registerWebUser(WebUser webuser) {
+		typeIndependentResources.registerWebUser(webuser, userTable, logger);		
+	}
+
+	@Override
+	public void unregisterWebUser(WebUser webuser) {
+		typeIndependentResources.unregisterWebUser(webuser, userTable, logger);			
 	}
 
 }

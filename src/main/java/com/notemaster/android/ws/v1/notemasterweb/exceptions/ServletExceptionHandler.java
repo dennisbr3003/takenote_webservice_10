@@ -22,7 +22,6 @@ public class ServletExceptionHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<>(error_object, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 
 	}
-
 	
 	@ExceptionHandler(value={CustomException.class}) // connect to user defined exception class specifically
 	public ResponseEntity<Object> handleException(CustomException ex, WebRequest webrequest){

@@ -1,12 +1,8 @@
 package com.notemaster.android.ws.v1.notemasterweb.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.notemaster.android.ws.v1.notemasterweb.database.DAOFactory;
 import com.notemaster.android.ws.v1.notemasterweb.database.IDatabaseBusinessObject;
-import com.notemaster.android.ws.v1.notemasterweb.exceptions.AuthenticationException;
 import com.notemaster.android.ws.v1.notemasterweb.exceptions.CustomException;
 import com.notemaster.android.ws.v1.notemasterweb.payload.UserDataPayload;
-import com.notemaster.android.ws.v1.notemasterweb.payload.WebUser;
 import com.notemaster.android.ws.v1.notemasterweb.resource.Authentication;
 import com.notemaster.android.ws.v1.notemasterweb.resource.LoggerTakeNote;
 import com.notemaster.android.ws.v1.notemasterweb.resource.Session;
@@ -29,7 +23,7 @@ import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
 @RestController
 @RequestMapping("notemaster/userdata") 
-public class UserDataController {
+public class UserDataController extends DataController {
 
 	private DAOFactory factory = DAOFactory.getFactory(DAOFactory.PSQL);
 	
@@ -46,8 +40,7 @@ public class UserDataController {
 	{
 
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
-		
-		DefaultResponse defaultResponse = new DefaultResponse();		
+			
 		LoggerTakeNote logger = new LoggerTakeNote();	
 
 		if (udp != null) {
@@ -65,14 +58,9 @@ public class UserDataController {
 				databaseBusinessObject.setLogger(logger);
 				databaseBusinessObject.processUserDataPayload(udp);
 
-				// produce answer for client -->
-				defaultResponse.setStatus("1");
-				defaultResponse.setEntity("userdata (post)");
-				defaultResponse.setKey("");
-				defaultResponse.setRemark("success");
-
 				logger.createInfoLogEntry(internal_method_name, "Completed");
-				return new ResponseEntity<DefaultResponse>(defaultResponse,HttpStatus.OK);
+				
+				return new ResponseEntity<DefaultResponse>(createSuccessResponse(internal_method_name),HttpStatus.OK);
 				
 			}catch(Exception e) {
 				

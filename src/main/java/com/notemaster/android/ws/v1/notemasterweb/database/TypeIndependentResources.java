@@ -12,7 +12,8 @@ import com.notemaster.android.ws.v1.notemasterweb.response.UserDataResponse;
 
 public class TypeIndependentResources {
 	
-	public WebUser getWebUser(String webusercode, IUserTable userTable, LoggerTakeNote logger) {
+	public WebUser getWebUser(WebUser webuser, IUserTable userTable, LoggerTakeNote logger) {
+		
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 		
 		if(logger != null) {
@@ -20,15 +21,32 @@ public class TypeIndependentResources {
 		}
 		
 		userTable.setLogger(logger);	
-		WebUser webuser = userTable.getWebUser(webusercode);
+		webuser = userTable.getWebUser(webuser);
 		
 		if(logger != null) {
 			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
 		}
 		return webuser;
 	}
+
+	public void unregisterWebUser(WebUser webuser, IUserTable userTable, LoggerTakeNote logger) {
+		
+		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
+		
+		if(logger != null) {
+			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
+		}
+		
+		userTable.setLogger(logger);	
+		userTable.deleteWebUser(webuser);
+		
+		if(logger != null) {
+			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));
+		}
+
+	}	
 	
-	public void addWebUser(WebUser webuser, IUserTable userTable, LoggerTakeNote logger) {
+	public void registerWebUser(WebUser webuser, IUserTable userTable, LoggerTakeNote logger) {
 		
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 	
 		
@@ -40,12 +58,12 @@ public class TypeIndependentResources {
 		
 		userTable.setLogger(logger);	
 		// First try to get the user and check if the device_id's are the same -->
-		verificationUser = userTable.getWebUser(webuser.getName());
+		verificationUser = userTable.getWebUser(webuser);
 		if ((verificationUser != null) && (verificationUser.getDevice_id().equals(webuser.getDevice_id()))){
 			// This cannot be allowed, this may be an entity trying to override the user password --> 		
 			throw new RequestException("Credentials already exist for this device");
 		}
-		userTable.insertWebUser(webuser);
+		userTable.addWebUser(webuser);
 		
 		if(logger != null) {
 			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Completed", internal_method_name));

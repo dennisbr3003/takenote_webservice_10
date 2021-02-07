@@ -18,7 +18,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		
         http.csrf().disable()
 		.authorizeRequests()
-		.antMatchers("/","/home","/error","/login","/notemaster/ping","/notemaster/user/add", "/notemaster/user/authenticate").permitAll()
+		.antMatchers("/","/home","/error","/login","/notemaster/ping","/notemaster/user/register", "/notemaster/user/authenticate").permitAll()
 		.anyRequest().authenticated()
 		.and()
 		.httpBasic(); //<-- you will need this to get basic authorization to work

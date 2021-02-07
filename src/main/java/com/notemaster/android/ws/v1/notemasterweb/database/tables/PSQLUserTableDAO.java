@@ -3,6 +3,7 @@ package com.notemaster.android.ws.v1.notemasterweb.database.tables;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,53 +29,55 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 		this.logger = logger;
 	}
 
-	public PSQLUserTableDAO() {
-		super();
-	}		
-
 	@Override
-	public WebUser getWebUser(String webusername) {
+	public WebUser getWebUser(WebUser webuser) {
 		
-		WebUser webuser = null;
+		WebUser verifiedWebUser = null;
+		PreparedStatement preparedStatement = null;
+		
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 				
-		PreparedStatement preparedStatement = null;
 		if(logger != null) {
 			logger.createInfoLogEntry(internal_method_name, String.format("%s %s", "Execute", internal_method_name));
 		}
 		
 		try {
-			preparedStatement = PSQLDatabase.getInstance().getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE %s = '%s';", 
-					                                                TABLE_USR, USR_NAME, webusername));
+			preparedStatement = PSQLDatabase.getInstance().getConnection().prepareStatement(
+					            String.format("SELECT * FROM %s WHERE %s = '%s';", 
+					                          TABLE_USR, USR_GUID,  webuser.getUser_id()), 
+					            ResultSet.TYPE_SCROLL_INSENSITIVE, // so I can move forward and backward in this ResultSet 
+	                            ResultSet.CONCUR_UPDATABLE);
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
-				// public WebUser(String code, String name, String password, String remark) 
-				webuser = new WebUser(rs.getString(USR_NAME), rs.getString(USR_PASSWRD), rs.getString(USR_DID), rs.getString(USR_REMARK));				
+				verifiedWebUser = new WebUser(rs);				
 		        break; /* just get the first */ 
 			}			
 			preparedStatement.close();
+			
 		} catch (SQLException e) {
 			if(logger != null) {
 				logger.createErrorLogEntry(internal_method_name, e.getMessage());
 			}
-			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+			System.out.println(String.format("%s %s", internal_method_name, e.getMessage()));
+			throw new CustomException(e.getMessage());
 		}
+		
 		if(logger != null) {
-			if (webuser != null) {
-				logger.createInfoLogEntry(internal_method_name, String.format("%s %s (%s)", "Retrieved user", webuser.getName(), webuser.getDevice_id()));
+			if (verifiedWebUser != null) {
+				logger.createInfoLogEntry(internal_method_name, String.format("%s %s (%s)", "Retrieved user", verifiedWebUser.getName(), verifiedWebUser.getDevice_id()));
 			} else {
-				logger.createInfoLogEntry(internal_method_name, String.format("User with name %s could not be found", webusername));
+				logger.createInfoLogEntry(internal_method_name, String.format("User with name %s could not be found", webuser.getName()));
 			}
 			
 		}
-		return webuser;
+		return verifiedWebUser;
 		
 	}
 	
 	
 	@Override
 	@Autowired
-	public void insertWebUser(WebUser webuser) {
+	public void addWebUser(WebUser webuser) {
 
 		String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
 		
@@ -82,32 +85,34 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
 
 		try {
 			preparedStatement = PSQLDatabase.getInstance().getConnection().prepareStatement(
-					String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?,?,?,?);", 
-							       TABLE_USR, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK));
+					String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?,?,?,?,?,?);", 
+							       TABLE_USR, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK, USR_GUID, USR_ROLES));
 			
 			preparedStatement.setString(1, webuser.getName());
 			preparedStatement.setString(2, passwordEncoder().encode(webuser.getPassword()));
 			preparedStatement.setString(3, webuser.getDevice_id());
 			preparedStatement.setString(4, webuser.getRemark());
+			preparedStatement.setString(5, webuser.getUser_id());
+			preparedStatement.setString(6, webuser.getRoles());
 			preparedStatement.executeUpdate();		
-
+			
+			preparedStatement.close();
+			PSQLDatabase.getInstance().getConnection().commit();
+			
+		} catch (SQLException e) {
+			if(logger != null) {
+				logger.createErrorLogEntry(internal_method_name, e.getMessage());
+			}
+			System.out.println(String.format("%s %s", internal_method_name, e.getMessage()));
+			throw new CustomException(e.getMessage());			
 		} catch (Exception e) {
 			if(logger != null) {
 				logger.createErrorLogEntry(internal_method_name, e.getMessage());
 			}
-			throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));
+			System.out.println(String.format("%s %s", internal_method_name, e.getMessage()));
+			throw new CustomException(e.getMessage());
 		}	
-		finally {
-			try {
-				preparedStatement.close();
-				PSQLDatabase.getInstance().getConnection().commit();
-			} catch (SQLException e) {
-				if(logger != null) {
-					logger.createErrorLogEntry(internal_method_name, e.getMessage());
-				}
-				throw new CustomException(String.format("%s|%s", e.getMessage(), internal_method_name));			
-			}
-		}		
+
 	}	
 
     @Bean
@@ -115,5 +120,49 @@ public class PSQLUserTableDAO implements UserTableConstants, IUserTable {
         return new BCryptPasswordEncoder();
     }    
 	
+    @Override
+    public void deleteWebUser(WebUser webuser) {
+		
+    	String internal_method_name = Thread.currentThread().getStackTrace()[1].getMethodName(); 
+		
+    	/* first check if the user has the correct credentials */
+    	WebUser webuser_db;
+    	webuser_db = getWebUser(webuser);
+    	
+    	System.out.println(String.format("%s Looking for user %s", internal_method_name, webuser.getUser_id()));
+    	
+    	if (webuser_db != null) { 
+    	
+    		System.out.println(String.format("%s Found user %s", internal_method_name, webuser_db.getUser_id()));
+    		
+    		Statement stmt = null; 
+	    	
+			try {			
+				stmt = PSQLDatabase.getInstance().getConnection().createStatement();
+				stmt.execute(String.format("DELETE FROM %s WHERE %s = '%s';",
+							                TABLE_USR, USR_GUID, webuser.getUser_id()));			
+				stmt.close();
+				if(logger != null) {
+					logger.createInfoLogEntry(internal_method_name, String.format("Removed cloud registration for %s on device %s", webuser.getName(), webuser.getDevice_id()));
+				}				
+			} catch (SQLException e) {
+				if(logger != null) {
+					logger.createErrorLogEntry(internal_method_name, e.getMessage());
+				}
+				System.out.println(String.format("%s %s", internal_method_name, e.getMessage()));
+				throw new CustomException(e.getMessage());
+			} catch (Exception e) {
+				if(logger != null) {					
+					logger.createErrorLogEntry(internal_method_name, e.getMessage());
+				}
+				System.out.println(String.format("%s %s", internal_method_name, e.getMessage()));
+				throw new CustomException(e.getMessage());	
+			}
+    	} else {
+    		System.out.println(String.format("%s Could not find user to unregister", internal_method_name));
+    		throw new CustomException("User cannot be unregistered. App data does not match service data for this device.");	
+    	}
+    }    
+    
 	
 }

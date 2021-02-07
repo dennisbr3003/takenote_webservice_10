@@ -12,17 +12,17 @@ public interface IDatabaseBusinessObject {
 	LoggerTakeNote getLogger();
 
 	void setLogger(LoggerTakeNote logger);
-	
-	// set userdata  
+	 
 	void processUserDataPayload(UserDataPayload udp);
 
 	boolean deviceHasData(String device_id);
 
-	// get userdata
 	UserDataResponse getUserDataResponse(String device_id);
 	
-	WebUser getWebUser(String webusercode);
+	WebUser getWebUser(WebUser webuser);
 	
-	void addWebUser(WebUser webuser);
+	void registerWebUser(WebUser webuser);
+	
+	void unregisterWebUser(WebUser webuser);	
 
 }

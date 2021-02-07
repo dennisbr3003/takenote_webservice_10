@@ -79,10 +79,10 @@ public class PSQLDatabaseBusinessObject implements
 					TABLE_PPI, PPI_ID, PPI_IMAGE_ID, PPI_NAME, PPI_VALUE, PPI_DTYPE, PPI_IMG_CREATED, PPI_IMG_UPDATED, PPI_CREATED, PPI_UPDATED, 
 					P_KEY_PPI, PPI_ID, PPI_NAME);		
 		case TABLE_USR:
-			return String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(100) NOT NULL, %s VARCHAR(255) NOT NULL, %s VARCHAR(50) NOT NULL, " + 
-					"%s VARCHAR(255), %s TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, %s TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +  
-					"CONSTRAINT %s PRIMARY KEY (%s, %s));", 
-					TABLE_USR, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK, USR_CREATED, USR_UPDATED, P_KEY_USR, USR_DID, USR_NAME);			
+			return String.format("CREATE TABLE IF NOT EXISTS %s (%s VARCHAR(255) NOT NULL, %s VARCHAR(100) NOT NULL, %s VARCHAR(255) NOT NULL, %s VARCHAR(50) NOT NULL, " + 
+					"%s VARCHAR(255), %s VARCHAR(255), %s TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, %s TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +  
+					"CONSTRAINT %s PRIMARY KEY (%s));", 
+					TABLE_USR, USR_GUID, USR_NAME, USR_PASSWRD, USR_DID, USR_REMARK, USR_ROLES, USR_CREATED, USR_UPDATED, P_KEY_USR, USR_GUID);			
 		default:
 			return "";
 		}		
@@ -136,13 +136,18 @@ public class PSQLDatabaseBusinessObject implements
 	}
 	
 	@Override
-	public WebUser getWebUser(String webusercode) {
-		return typeIndependentResources.getWebUser(webusercode, userTable, logger);
+	public WebUser getWebUser(WebUser webuser) {
+		return typeIndependentResources.getWebUser(webuser, userTable, logger);
 	}
 
 	@Override
-	public void addWebUser(WebUser webuser) {
-		typeIndependentResources.addWebUser(webuser, userTable, logger);		
+	public void registerWebUser(WebUser webuser) {
+		typeIndependentResources.registerWebUser(webuser, userTable, logger);		
+	}
+
+	@Override
+	public void unregisterWebUser(WebUser webuser) {		
+		typeIndependentResources.unregisterWebUser(webuser, userTable, logger);	
 	}
 	
 }
