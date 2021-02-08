@@ -173,7 +173,7 @@ public class UserController extends DataController {
 				}
 			}else {
 				logger.createErrorLogEntry(internal_method_name, "Authentication failed (user not found)");
-				throw new AuthenticationException(String.format("User %s, %s could not be found. Authentification failed", webuser.getUser_id(), webuser.getName()));
+				throw new AuthenticationException(String.format("User %s, %s could not be found. Authentication failed", webuser.getUser_id(), webuser.getName()));
 			}
 
 			logger.createInfoLogEntry(internal_method_name, "Completed");
